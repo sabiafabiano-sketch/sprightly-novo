@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finanças da Família | Controle Financeiro</title>
+<style>
+:root{--navy:#1f3b3a;--blue:#267568;--bg:#f4f7f6;--card:#fff;--text:#263432;--muted:#667874;--green:#197a59;--red:#b94a48;--border:#dbe5e1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:linear-gradient(120deg,#1f3b3a,#267568);color:#fff;padding:20px 18px}
+.wrap{max-width:1180px;margin:auto;padding:0 16px}
+.header-flex{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+header h1{margin:0 0 4px;font-size:1.65rem}header p{margin:0;color:#e3efec;font-size:0.9rem}
+.user-badge{background:rgba(255,255,255,0.14);padding:8px 12px;border-radius:8px;font-size:0.85rem;display:flex;align-items:center;gap:10px}
+main{padding:20px 0 40px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tab{border:1px solid var(--border);background:#fff;color:var(--navy);padding:10px 15px;border-radius:8px;cursor:pointer;font-weight:650}
+.tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.panel{display:none}.panel.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.card,.section{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;box-shadow:0 2px 7px #1f3b3a0a}
+.metric-label{font-size:.85rem;color:var(--muted)}.metric{font-size:clamp(1.15rem,3vw,1.65rem);font-weight:750;margin-top:5px;overflow-wrap:anywhere}
+.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}
+.section{margin-bottom:16px}.section h2{font-size:1.12rem;margin:0 0 14px}
+.projection-band{margin:0 0 18px;padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.projection-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.projection-heading h2{font-size:1.05rem;margin:0 0 3px}.projection-heading p{margin:0}
+.projection-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px}
+.projection-metrics>div{border-left:3px solid var(--border);padding:2px 0 2px 12px;min-width:0}
+.projection-metrics>div:nth-child(1){border-color:var(--green)}.projection-metrics>div:nth-child(2){border-color:var(--red)}.projection-metrics>div:nth-child(3){border-color:var(--blue)}
+.projection-metrics strong{display:block;font-size:1.2rem;margin-top:3px;overflow-wrap:anywhere}
+.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+label{display:block;font-size:.85rem;font-weight:650;color:#465753;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:var(--text);font:inherit;min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid #93c9bc;border-color:var(--blue)}
+.password-control{position:relative}
+.password-control input{padding-right:76px}
+.password-toggle{position:absolute;right:5px;top:50%;transform:translateY(-50%);padding:5px 8px;background:transparent;color:var(--blue);font-size:.82rem}
+.password-toggle:hover{background:#e8efed}
+.sync-config{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.sync-config summary{cursor:pointer;color:var(--blue);font-weight:650}
+.sync-config p{margin:8px 0 12px}
+.sync-config .form-group{margin-bottom:10px}
+.sync-status{font-size:.78rem;color:#e3efec}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button,.file-label{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:10px 14px;font-weight:650}
+button:disabled{opacity:.55;cursor:not-allowed}
+.primary{background:var(--blue);color:#fff}.secondary{background:#e8efed;color:var(--navy)}.danger{background:#fee2e2;color:#991b1b}.small{padding:6px 9px;font-size:.82rem}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:12px}.filters>div{min-width:150px;flex:1}
+.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:8px}
+table{width:100%;border-collapse:collapse;background:#fff;min-width:720px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid #e8edf3;white-space:nowrap}
+th{background:#edf3f1;color:#334a45;font-size:.83rem}tbody tr:last-child td{border-bottom:0}td.desc{white-space:normal;min-width:160px}
+.empty{text-align:center;color:var(--muted);padding:24px}
+.note{color:var(--muted);font-size:.88rem}.pill{display:inline-block;padding:3px 8px;border-radius:99px;font-size:.78rem;font-weight:700}.pill.in{background:#dcfce7;color:#166534}.pill.out{background:#fee2e2;color:#991b1b}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+progress{width:100%;height:12px;accent-color:var(--blue)}
+footer{text-align:center;color:var(--muted);padding:18px;font-size:.85rem}
+.auth-wrapper{display:flex;align-items:center;justify-content:center;min-height:80vh;padding:16px}
+.auth-card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:28px;box-shadow:0 4px 12px #1f3b3a0d}
+.auth-card h1{margin:0 0 6px;font-size:1.5rem;color:var(--navy);text-align:center}
+.auth-card p.subtitle{margin:0 0 20px;color:var(--muted);text-align:center;font-size:0.9rem}
+.alert-box{padding:10px;border-radius:8px;font-size:0.85rem;margin-bottom:14px;text-align:center;display:none}
+.alert-error{background:#fee2e2;color:var(--red)}
+.alert-success{background:#dcfce7;color:var(--green)}
+.hidden{display:none!important}
+@media(max-width:850px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.two-col{grid-template-columns:1fr}}
+@media(max-width:560px){.projection-metrics{grid-template-columns:1fr;gap:12px}.projection-metrics>div{padding-left:10px}.header-flex{align-items:flex-start}header h1{font-size:1.4rem}}
+</style>
+</head>
+<body>
+
+<div id="authScreen" class="auth-wrapper">
+  <div class="auth-card" id="loginCardBox">
+    <h1>Controle Financeiro</h1>
+    <p class="subtitle">Entre com seu e-mail e senha</p>
+    <div id="loginAlert" class="alert-box alert-error"></div>
+    <button type="button" class="secondary small hidden" id="loginResendConfirm">Reenviar confirmação de e-mail</button>
+    <div id="loginResendStatus" class="alert-box alert-success"></div>
+    <form id="loginForm">
+      <div class="form-group" style="margin-bottom:14px"><label for="loginEmail">E-mail</label><input type="email" id="loginEmail" required placeholder="seu@email.com" autocomplete="email"></div>
+      <div class="form-group" style="margin-bottom:16px"><label for="loginPassword">Senha</label><div class="password-control"><input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••"><button class="password-toggle" type="button" id="toggleLoginPassword" aria-label="Mostrar senha" aria-controls="loginPassword" aria-pressed="false">Mostrar</button></div></div>
+      <button type="submit" class="primary" style="width:100%">Entrar</button>
+    </form>
+    <details class="sync-config" id="supabaseSetup">
+      <summary>Configurar conexão na nuvem</summary>
+      <p class="note">Use a URL do projeto e a chave publicável/anon. Nunca use a chave service_role aqui.</p>
+      <p class="note">Se este HTML estiver aberto como arquivo local, confirme o e-mail e depois volte a esta página para entrar. Para retorno automático, hospede o HTML e autorize sua URL em Authentication → URL Configuration.</p>
+      <div class="form-group"><label for="supabaseUrl">URL do projeto</label><input id="supabaseUrl" type="url" placeholder="https://seu-projeto.supabase.co" autocomplete="url"></div>
+      <div class="form-group"><label for="supabasePublicKey">Chave publicável (anon)</label><input id="supabasePublicKey" type="text" autocomplete="off" spellcheck="false"></div>
+      <button type="button" class="secondary" id="saveSupabaseConfig">Salvar conexão neste dispositivo</button>
+      <p id="supabaseConfigStatus" class="note" aria-live="polite"></p>
+    </details>
+    <button type="button" class="secondary" style="width:100%;margin-top:10px;background:transparent;color:var(--blue)" id="showRegisterBtn">Criar uma nova conta</button>
+  </div>
+
+  <div class="auth-card hidden" id="registerCardBox">
+    <h1>Criar Conta</h1>
+    <p class="subtitle">Cadastre-se para gerenciar suas finanças</p>
+    <div id="registerAlert" class="alert-box alert-error"></div>
+    <div id="registerSuccess" class="alert-box alert-success"></div>
+    <button type="button" class="secondary small hidden" id="resendConfirmationBtn">Reenviar e-mail de confirmação</button>
+    <form id="registerForm">
+      <div class="form-group" style="margin-bottom:12px"><label>Nome completo</label><input type="text" id="regName" required placeholder="Seu nome"></div>
+      <div class="form-group" style="margin-bottom:12px"><label>E-mail</label><input type="email" id="regEmail" required placeholder="seu@email.com"></div>
+      <div class="form-group" style="margin-bottom:16px"><label>Senha (mín. 6 caracteres)</label><input type="password" id="regPassword" required placeholder="••••••••"></div>
+      <button type="submit" class="primary" style="width:100%">Cadastrar</button>
+    </form>
+    <button type="button" class="secondary" style="width:100%;margin-top:10px;background:transparent;color:var(--blue)" id="showLoginBtn">Já tem conta? Faça login</button>
+  </div>
+</div>
+
+<div id="appScreen" class="hidden">
+<header>
+  <div class="wrap header-flex">
+    <div>
+      <h1>Controle Financeiro Familiar</h1>
+      <p>Planejamento familiar, acompanhamento de gastos e parcelas previstas.</p>
+    </div>
+    <div class="user-badge">
+      <span id="loggedUserName">Usuário</span>
+      <span class="sync-status" id="syncStatus" role="status" aria-live="polite">Offline</span>
+      <button class="danger small" id="logoutBtn" style="padding:4px 8px;font-size:0.78rem">Sair</button>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <nav class="tabs" aria-label="Abas do controle financeiro">
+    <button class="tab active" data-tab="painel">Visão geral</button>
+    <button class="tab" data-tab="lancamentos">Lançamentos</button>
+    <button class="tab" data-tab="orcamento">Orçamento</button>
+    <button class="tab" data-tab="acompanhamento">Acompanhamento de Produtos</button>
+    <button class="tab" data-tab="relatorios">Relatórios</button>
+    <button class="tab" data-tab="dados">Dados e backup</button>
+  </nav>
+
+  <section class="panel active" id="painel">
+    <div class="filters"><div><label for="dashMonth">Mês de referência</label><input id="dashMonth" type="month"></div><div><label for="dashAccount">Conta / responsável</label><select id="dashAccount"><option value="">Todos</option></select></div></div>
+    <div class="cards">
+      <div class="card"><div class="metric-label">Receitas recebidas</div><div class="metric green" id="mIncome">R$ 0,00</div></div>
+      <div class="card"><div class="metric-label">Despesas pagas</div><div class="metric red" id="mExpense">R$ 0,00</div></div>
+      <div class="card"><div class="metric-label">Saldo do mês</div><div class="metric blue" id="mBalance">R$ 0,00</div></div>
+      <div class="card"><div class="metric-label">Contas em aberto</div><div class="metric" id="mOpen">R$ 0,00</div></div>
+    </div>
+    <div class="projection-band">
+      <div class="projection-heading"><div><h2>Previsão mensal</h2><p class="note" id="projectionNote">Valores previstos; pagamentos não confirmados.</p></div><span class="pill" style="background:#e5f1ed;color:var(--navy)">PLANEJAMENTO</span></div>
+      <div class="projection-metrics">
+        <div><span class="metric-label">Receitas informadas</span><strong class="green" id="planIncome">R$ 0,00</strong></div>
+        <div><span class="metric-label">Parcelas previstas</span><strong class="red" id="planExpense">R$ 0,00</strong></div>
+        <div><span class="metric-label">Saldo planejado</span><strong class="blue" id="planBalance">R$ 0,00</strong></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="section"><h2>Resumo por categoria</h2><div id="categorySummary" class="note">Adicione lançamentos para ver o resumo.</div></div>
+      <div class="section"><h2>Próximas contas a vencer</h2><div id="upcoming" class="note">Nenhuma conta cadastrada.</div></div>
+    </div>
+  </section>
+
+  <section class="panel" id="lancamentos">
+    <div class="section">
+      <h2 id="formTitle">Adicionar lançamento</h2>
+      <form id="entryForm">
+        <input type="hidden" id="editId">
+        <div class="form-grid">
+          <div><label for="date">Data</label><input id="date" type="date" required></div>
+          <div><label for="type">Tipo</label><select id="type"><option value="despesa">Despesa / débito</option><option value="receita">Receita / crédito</option></select></div>
+          <div><label for="description">Descrição / Produto</label><input id="description" placeholder="Ex.: Supermercado, Portão..." required maxlength="120"></div>
+          <div><label for="amount">Valor (R$)</label><input id="amount" type="number" min="0.01" step="0.01" placeholder="0,00" required></div>
+          <div><label for="category">Categoria</label><select id="category"></select></div>
+          <div><label for="status">Situação</label><select id="status"><option value="pago">Pago / recebido</option><option value="pendente">Pendente</option></select></div>
+          <div><label for="dueDate">Vencimento (opcional)</label><input id="dueDate" type="date"></div>
+          <div><label for="account">Responsável / conta</label><input id="account" placeholder="Ex.: Família, Fabiano..." maxlength="80"></div>
+          <div><label for="isInstallment">Compra parcelada?</label><select id="isInstallment"><option value="no">Não (Lançamento único)</option><option value="yes">Sim (Gerar parcelas)</option></select></div>
+          <div><label for="totalInstallments">Qtd. Parcelas</label><input id="totalInstallments" type="number" min="1" max="120" value="1"></div>
+          <div style="grid-column:1/-1"><label for="notes">Observações (opcional)</label><input id="notes" placeholder="Detalhes, forma de pagamento..." maxlength="250"></div>
+        </div>
+        <div class="actions"><button class="primary" type="submit" id="saveBtn">Salvar lançamento</button><button class="secondary" type="button" id="cancelEdit" hidden>Cancelar edição</button><button class="secondary" type="reset" id="clearForm">Limpar formulário</button></div>
+      </form>
+    </div>
+    <div class="section">
+      <h2>Planilha de lançamentos</h2>
+      <div class="filters">
+        <div><label for="filterMonth">Mês</label><input id="filterMonth" type="month"></div>
+        <div><label for="filterType">Tipo</label><select id="filterType"><option value="">Todos</option><option value="receita">Receitas / créditos</option><option value="despesa">Despesas / débitos</option></select></div>
+        <div><label for="filterStatus">Situação</label><select id="filterStatus"><option value="">Todas</option><option value="pago">Pago / recebido</option><option value="pendente">Pendente</option></select></div>
+        <div><label for="filterCategory">Categoria</label><select id="filterCategory"><option value="">Todas</option></select></div>
+        <div><label for="filterSearch">Buscar descrição</label><input id="filterSearch" placeholder="Digite para buscar"></div>
+      </div>
+      <div class="actions" style="margin:0 0 12px"><button class="secondary" id="exportFiltered">Exportar lista filtrada CSV</button><button class="secondary" id="showAll">Limpar filtros</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Data</th><th>Tipo</th><th>Descrição / Produto</th><th>Categoria</th><th>Responsável</th><th>Valor</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="entriesBody"></tbody></table></div>
+      <p id="entryCount" class="note"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="orcamento">
+    <div class="section">
+      <h2>Planejamento mensal por categoria</h2>
+      <p class="note">Defina quanto pretende gastar em cada categoria para o mês selecionado.</p>
+      <div class="form-grid">
+        <div><label for="budgetMonth">Mês do orçamento</label><input id="budgetMonth" type="month"></div>
+        <div><label for="budgetCategory">Categoria</label><select id="budgetCategory"></select></div>
+        <div><label for="budgetAmount">Limite mensal (R$)</label><input id="budgetAmount" type="number" min="0" step="0.01" placeholder="0,00"></div>
+        <div style="display:flex;align-items:end"><button class="primary" id="saveBudget" type="button">Salvar limite</button></div>
+      </div>
+    </div>
+    <div class="section"><h2>Limites e gastos</h2><div id="budgetTable"></div></div>
+  </section>
+
+  <section class="panel" id="acompanhamento">
+    <div class="section">
+      <h2>Acompanhamento de Produtos e Valores Mês a Mês</h2>
+      <p class="note">Selecione um produto/descrição para visualizar a evolução dos gastos mês a mês.</p>
+      <div class="filters">
+        <div><label for="trackProduct">Produto / Descrição</label><select id="trackProduct"></select></div>
+      </div>
+      <div id="productTrackingResult" style="margin-top:16px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="relatorios">
+    <div class="section">
+      <h2>Relatório mensal</h2>
+      <div class="form-grid"><div><label for="reportMonth">Mês</label><input id="reportMonth" type="month"></div><div style="display:flex;align-items:end"><button class="primary" id="refreshReport" type="button">Atualizar relatório</button></div></div>
+      <div class="cards" style="margin-top:16px">
+        <div class="card"><div class="metric-label">Receitas pagas/recebidas</div><div class="metric green" id="rIncome">R$ 0,00</div></div>
+        <div class="card"><div class="metric-label">Despesas pagas</div><div class="metric red" id="rExpense">R$ 0,00</div></div>
+        <div class="card"><div class="metric-label">Resultado realizado</div><div class="metric blue" id="rResult">R$ 0,00</div></div>
+        <div class="card"><div class="metric-label">Pendências</div><div class="metric" id="rPending">R$ 0,00</div></div>
+      </div>
+      <div id="reportDetails"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="dados">
+    <div class="section"><h2>Exportar e restaurar dados</h2><p>Faça backup de seus lançamentos e orçamentos em formato JSON.</p>
+      <div class="actions"><button class="primary" id="backupJson">Baixar backup JSON</button><button class="secondary" id="exportAllCsv">Baixar todos os lançamentos CSV</button></div>
+      <hr style="border:0;border-top:1px solid var(--border);margin:20px 0">
+      <label for="importFile">Restaurar backup JSON</label><input id="importFile" type="file" accept=".json,application/json">
+      <div class="actions"><button class="danger" id="clearData">Apagar todos os dados</button></div>
+    </div>
+  </section>
+</main>
+<footer>Controle Financeiro Familiar · Protegido por Senha</footer>
+</div>
+
+<script>
+(() => {
+'use strict';
+const SESSION_KEY = 'app_logged_user_v1';
+const DATA_PREFIX = 'controleFinanceiroUser_';
+const SUPABASE_CONFIG_KEY = 'finance_supabase_config_v1';
+const LOCAL_PLAN_SOURCE = 'local_financial_plan_v1';
+const LEGACY_PLAN_SOURCE = 'planilha_financeiro_26_10';
+
+let currentUser = null;
+let authSession = null;
+let cloudSyncQueue = Promise.resolve();
+let cloudSyncPending = 0;
+let cloudPollTimer = null;
+let lastCloudUpdatedAt = null;
+let hasUnsyncedChanges = false;
+let state = {entries: [], budgets: {}};
+
+const $=id=>document.getElementById(id);
+const today=new Date();
+const monthNow=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+const dateNow=`${monthNow}-${String(today.getDate()).padStart(2,'0')}`;
+const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>`${Date.now()}_${Math.random().toString(36).slice(2,9)}`;
+
+const categories={
+ receita:['Salário','Renda extra','Benefícios','Rendimentos','Reembolso','Outras receitas'],
+ despesa:['Moradia','Alimentação','Transporte','Água e energia','Internet e telefone','Saúde','Educação','Lazer','Assinaturas','Impostos e taxas','Dívidas e empréstimos','Pets','Vestimentas','Filho','Casa','Carro','Celular','Farmácia','Mercado','Comida','Estudo','Extra','Outras despesas']
+};
+
+const initialEntries = [{"id": "imp_546197755444080705", "date": "2026-11-15", "type": "despesa", "description": "Ninho (moto)", "amount": 214.0, "category": "Transporte", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_6786952972781281014", "date": "2026-11-15", "type": "despesa", "description": "Botudog", "amount": 69.45, "category": "Cachorros", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_3122536045263208678", "date": "2026-11-15", "type": "despesa", "description": "Carnieto", "amount": 315.0, "category": "Transporte", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 3x"}, {"id": "imp_2158056783882823063", "date": "2026-11-15", "type": "despesa", "description": "Pink (roupa)", "amount": 52.88, "category": "Vestimentas", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_6500669886905735026", "date": "2026-11-15", "type": "despesa", "description": "Sofá (Claudia)", "amount": 130.64, "category": "Moradia", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 2x"}, {"id": "imp_4422591403593031903", "date": "2026-11-15", "type": "despesa", "description": "Rio Sul", "amount": 92.0, "category": "Vestimentas", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 6x"}, {"id": "imp_4567964430660215212", "date": "2026-11-15", "type": "despesa", "description": "Montreal (Copos)", "amount": 61.2, "category": "Moradia", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_1206186540456426424", "date": "2026-11-15", "type": "despesa", "description": "Brinquedo Gah", "amount": 49.99, "category": "Filho", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 3x"}, {"id": "imp_5910598089417654817", "date": "2026-11-15", "type": "despesa", "description": "Portão", "amount": 355.0, "category": "Moradia", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 10x"}, {"id": "imp_4479306960452154588", "date": "2026-11-15", "type": "despesa", "description": "Eletti", "amount": 65.0, "category": "Moradia", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_7847375222847549920", "date": "2026-11-15", "type": "despesa", "description": "Spotify", "amount": 12.9, "category": "Extra", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_2111331023776381835", "date": "2026-11-15", "type": "despesa", "description": "Sutiã", "amount": 102.11, "category": "Vestimentas", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 2x"}, {"id": "imp_3757562063825990304", "date": "2026-11-15", "type": "despesa", "description": "agropec", "amount": 147.9, "category": "Cachorros", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_7496897537249006119", "date": "2026-11-15", "type": "despesa", "description": "Central", "amount": 83.15, "category": "Mercado", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_1281963543143855362", "date": "2026-11-15", "type": "despesa", "description": "Blablacar", "amount": 19.9, "category": "Extra", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 12x"}, {"id": "imp_7319032144283565452", "date": "2026-11-15", "type": "despesa", "description": "Carnietto", "amount": 208.05, "category": "Carro", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 5x"}, {"id": "imp_3994720298764037715", "date": "2026-11-15", "type": "despesa", "description": "Uber", "amount": 15.03, "category": "Transporte", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_5801560281215482569", "date": "2026-11-15", "type": "despesa", "description": "Uber", "amount": 22.53, "category": "Transporte", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_191796842278263904", "date": "2026-11-15", "type": "despesa", "description": "Uber", "amount": 15.21, "category": "Transporte", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_3994720298764037715", "date": "2026-11-15", "type": "despesa", "description": "Uber", "amount": 15.03, "category": "Transporte", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_5465056815879785836", "date": "2026-11-15", "type": "despesa", "description": "Uber", "amount": 9.0, "category": "Transporte", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_5229944024807472962", "date": "2026-11-15", "type": "despesa", "description": "Uber", "amount": 8.41, "category": "Transporte", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_225965352164860261", "date": "2026-11-15", "type": "despesa", "description": "Açougue", "amount": 141.09, "category": "Mercado", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_4833767408719728080", "date": "2026-11-15", "type": "despesa", "description": "Farmacia", "amount": 33.28, "category": "Farmácia", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_1019884275710606693", "date": "2026-11-15", "type": "despesa", "description": "mercado", "amount": 36.39, "category": "Mercado", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_7596938777244720668", "date": "2026-11-15", "type": "despesa", "description": "Autozone", "amount": 56.67, "category": "Carro", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 3x"}, {"id": "imp_8119209687619801720", "date": "2026-11-15", "type": "despesa", "description": "Gasolina", "amount": 100.0, "category": "Carro", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_5386259021173401681", "date": "2026-11-15", "type": "despesa", "description": "Netflix", "amount": 20.9, "category": "Extra", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 3x"}, {"id": "imp_6301092320585257061", "date": "2026-11-15", "type": "despesa", "description": "Lanche", "amount": 33.9, "category": "Comida", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_547128757008030193", "date": "2026-11-15", "type": "despesa", "description": "Lava e seca / havan", "amount": 198.79, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 5x"}, {"id": "imp_3354726985391568557", "date": "2026-11-15", "type": "despesa", "description": "Utensilios/Havan", "amount": 29.99, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 4x"}, {"id": "imp_8101650188290070898", "date": "2026-11-15", "type": "despesa", "description": "Figurinha /Havan", "amount": 21.0, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 5x"}, {"id": "imp_1657324900192058748", "date": "2026-11-15", "type": "despesa", "description": "produto/havan", "amount": 17.61, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 4x"}, {"id": "imp_2094263973594551650", "date": "2026-11-15", "type": "despesa", "description": "not / havan", "amount": 162.56, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 7x"}, {"id": "imp_2187971636387544610", "date": "2026-11-15", "type": "despesa", "description": "aspirador/havan", "amount": 9.68, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 2x"}, {"id": "imp_5980184297488163973", "date": "2026-11-15", "type": "despesa", "description": "lacaseca/havan", "amount": 172.4, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_8761816345820589877", "date": "2026-11-15", "type": "despesa", "description": "microonddas/havan", "amount": 69.99, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 5x"}, {"id": "imp_922741126280509485", "date": "2026-11-15", "type": "despesa", "description": "Sem parar", "amount": 814.86, "category": "Carro", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 1x"}, {"id": "imp_2229881287890754449", "date": "2026-11-15", "type": "despesa", "description": "Celular Fabiano", "amount": 53.41, "category": "Celular", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 12x"}, {"id": "imp_1974072177202402710", "date": "2026-11-15", "type": "despesa", "description": "celular tamires", "amount": 45.14, "category": "Celular", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 12x"}, {"id": "imp_5990819410795674856", "date": "2026-11-15", "type": "despesa", "description": "Unimed / gabriel", "amount": 315.0, "category": "Filho", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 12x"}, {"id": "imp_6546334734347664945", "date": "2026-11-15", "type": "despesa", "description": "Maia", "amount": 180.0, "category": "Extra", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 5x"}, {"id": "imp_5091778172428738376", "date": "2026-11-15", "type": "despesa", "description": "Formatura", "amount": 140.0, "category": "Extra", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 16x"}, {"id": "imp_7173949171601465821", "date": "2026-11-15", "type": "despesa", "description": "casa", "amount": 630.0, "category": "Moradia", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 231x"}, {"id": "imp_6456579054178588654", "date": "2026-11-15", "type": "despesa", "description": "Carro/financiamento", "amount": 1350.0, "category": "Carro", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 12x"}, {"id": "imp_5395666705640051219", "date": "2026-11-15", "type": "despesa", "description": "emprestimo", "amount": 740.0, "category": "Extra", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 2x"}, {"id": "imp_7687905120118173997", "date": "2026-11-15", "type": "despesa", "description": "jualina Bauru", "amount": 200.0, "category": "Lazer", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 2x"}, {"id": "imp_459432764560801230", "date": "2026-11-15", "type": "despesa", "description": "Agua", "amount": 120.0, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 12x"}, {"id": "imp_7298060309890912127", "date": "2026-11-15", "type": "despesa", "description": "Luz", "amount": 270.0, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 12x"}, {"id": "imp_5368855490207698322", "date": "2026-11-15", "type": "despesa", "description": "internet", "amount": 100.0, "category": "Casa", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 12x"}, {"id": "imp_1500262511124040405", "date": "2026-11-15", "type": "despesa", "description": "Faculdade", "amount": 410.0, "category": "Estudo", "status": "pendente", "dueDate": "2026-11-15", "account": "Família", "notes": "Parcela 13x"}, {"id": "imp_1175106473844937791", "date": "2026-11-26", "type": "despesa", "description": "uber", "amount": 23.8, "category": "Transporte", "status": "pendente", "dueDate": "2026-11-26", "account": "Família", "notes": "Parcela 1x"}, {"id": "rec_6677999361451863009", "date": "2026-11-01", "type": "receita", "description": "adv salario", "amount": 1200.0, "category": "receita", "status": "pago", "dueDate": "2026-11-01", "account": "Família", "notes": "Receita importada"}, {"id": "rec_6037985543895254146", "date": "2026-11-01", "type": "receita", "description": "academia salario", "amount": 6171.43, "category": "receita", "status": "pago", "dueDate": "2026-11-01", "account": "Família", "notes": "Receita importada"}, {"id": "rec_454684146940414303", "date": "2026-11-01", "type": "receita", "description": "hand / negociação", "amount": 800.0, "category": "receita", "status": "pago", "dueDate": "2026-11-01", "account": "Família", "notes": "Receita importada"}, {"id": "rec_3674095601437774331", "date": "2026-11-01", "type": "receita", "description": "salario tamires", "amount": 2072.73, "category": "receita", "status": "pago", "dueDate": "2026-11-01", "account": "Família", "notes": "Receita importada"}, {"id": "rec_6011579572317598876", "date": "2026-11-01", "type": "receita", "description": "adv salario", "amount": 1200.0, "category": "receita", "status": "pago", "dueDate": "2026-11-01", "account": "Família", "notes": "Receita importada"}, {"id": "rec_6037985543895254146", "date": "2026-11-01", "type": "receita", "description": "academia salario", "amount": 6171.43, "category": "receita", "status": "pago", "dueDate": "2026-11-01", "account": "Família", "notes": "Receita importada"}, {"id": "rec_454684146940414303", "date": "2026-11-01", "type": "receita", "description": "hand / negociação", "amount": 800.0, "category": "receita", "status": "pago", "dueDate": "2026-11-01", "account": "Família", "notes": "Receita importada"}, {"id": "rec_3674095601437774331", "date": "2026-11-01", "type": "receita", "description": "salario tamires", "amount": 2072.73, "category": "receita", "status": "pago", "dueDate": "2026-11-01", "account": "Família", "notes": "Receita importada"}];
+
+function getSupabaseConfig(){try{return JSON.parse(localStorage.getItem(SUPABASE_CONFIG_KEY)||'null');}catch{return null;}}
+function authErrorMessage(error){
+ const message=String(error?.message||'').trim(),normalized=message.toLowerCase();
+ if(normalized.includes('email not confirmed')||normalized.includes('email_not_confirmed'))return 'Confirme seu e-mail pelo link enviado. Se não o encontrar, use “Reenviar confirmação de e-mail”.';
+ if(normalized.includes('invalid login credentials'))return 'E-mail ou senha incorretos.';
+ if(normalized.includes('user already registered')||normalized.includes('already registered'))return 'Este e-mail já tem cadastro. Volte e entre com sua senha.';
+ if(normalized.includes('failed to fetch'))return 'Não foi possível conectar. Confira a internet e a URL do projeto.';
+ return message||'Não foi possível concluir. Verifique a conexão e tente novamente.';
+}
+function setSyncStatus(text){const el=$('syncStatus');if(el)el.textContent=text;}
+function saveAuthSession(payload){
+ const user=payload.user||authSession?.user;
+ if(!payload.access_token||!user?.id)throw new Error('A autenticação não retornou uma sessão válida.');
+ authSession={...payload,user,expires_at:payload.expires_at||Math.floor(Date.now()/1000)+Number(payload.expires_in||3600)};
+ localStorage.setItem(SESSION_KEY,JSON.stringify(authSession));
+ return authSession;
+}
+async function supabaseRequest(path,{method='GET',body,accessToken,headers:extraHeaders={}}={}){
+ const config=getSupabaseConfig();
+ if(!config?.url||!config?.publicKey)throw new Error('Configure a conexão Supabase antes de entrar.');
+ const headers={apikey:config.publicKey,Authorization:`Bearer ${accessToken||config.publicKey}`,...extraHeaders};
+ if(body!==undefined)headers['Content-Type']='application/json';
+ const response=await fetch(`${config.url}${path}`,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});
+ const text=await response.text();
+ let result=null;
+ try{result=text?JSON.parse(text):null;}catch{result={message:text};}
+ if(!response.ok)throw new Error(result?.msg||result?.message||result?.error_description||result?.error||`Erro Supabase (${response.status}).`);
+ return result;
+}
+async function refreshAuthSession(){
+ if(!authSession)throw new Error('Sua sessão expirou. Entre novamente.');
+ if(Number(authSession.expires_at)*1000>Date.now()+60000)return authSession;
+ if(!authSession.refresh_token)throw new Error('Sua sessão expirou. Entre novamente.');
+ const refreshed=await supabaseRequest('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:authSession.refresh_token}});
+ return saveAuthSession(refreshed);
+}
+async function authenticatedSupabaseRequest(path,options={}){
+ const session=await refreshAuthSession();
+ return supabaseRequest(path,{...options,accessToken:session.access_token});
+}
+
+const savedSupabaseConfig=getSupabaseConfig();
+localStorage.removeItem('app_users_db_v1');
+if(!savedSupabaseConfig)$('supabaseSetup').open=true;
+if(savedSupabaseConfig){$('supabaseUrl').value=savedSupabaseConfig.url||'';$('supabasePublicKey').value=savedSupabaseConfig.publicKey||'';$('supabaseConfigStatus').textContent='Conexão configurada neste dispositivo.';}
+$('saveSupabaseConfig').addEventListener('click',()=>{
+ const url=$('supabaseUrl').value.trim().replace(/\/+$/,''),publicKey=$('supabasePublicKey').value.trim();
+ try{
+  const parsedUrl=new URL(url);
+  if(!['https:','http:'].includes(parsedUrl.protocol)||!publicKey)throw new Error('Informe uma URL válida e a chave publicável/anon.');
+  const normalizedKey=publicKey.toLowerCase();
+  if(normalizedKey.includes('service_role')||normalizedKey.startsWith('sb_secret_'))throw new Error('Use somente a chave publicável/anon. Chaves secretas não podem ficar no navegador.');
+  localStorage.setItem(SUPABASE_CONFIG_KEY,JSON.stringify({url,publicKey}));
+  $('supabaseConfigStatus').textContent='Conexão salva neste dispositivo.';
+ }catch(err){$('supabaseConfigStatus').textContent=err.message;}
+});
+
+$('showRegisterBtn').onclick = () => { $('loginCardBox').classList.add('hidden'); $('registerCardBox').classList.remove('hidden'); };
+$('showLoginBtn').onclick = () => { $('registerCardBox').classList.add('hidden'); $('loginCardBox').classList.remove('hidden'); };
+$('toggleLoginPassword').addEventListener('click',()=>{
+ const input=$('loginPassword'),button=$('toggleLoginPassword'),showing=input.type==='password';
+ input.type=showing?'text':'password';
+ button.textContent=showing?'Ocultar':'Mostrar';
+ button.setAttribute('aria-label',showing?'Ocultar senha':'Mostrar senha');
+ button.setAttribute('aria-pressed',String(showing));
+ input.focus();
+});
+
+function getEmailRedirectUrl(){
+ if(!['http:','https:'].includes(location.protocol))return null;
+ const redirect=new URL(location.href);redirect.hash='';redirect.search='';return redirect.toString();
+}
+
+$('registerForm').onsubmit = async e => {
+  e.preventDefault();
+  const name = $('regName').value.trim();
+  const email = $('regEmail').value.trim().toLowerCase();
+  const password = $('regPassword').value;
+  if(password.length < 6){ $('registerAlert').textContent='A senha deve ter no mínimo 6 caracteres.'; $('registerAlert').style.display='block'; return; }
+  const button=$('registerForm').querySelector('button[type="submit"]');
+  button.disabled=true;$('registerAlert').style.display='none';$('registerSuccess').style.display='none';$('resendConfirmationBtn').classList.add('hidden');
+  try{
+    const redirect=getEmailRedirectUrl();
+    const signupPath=redirect?`/auth/v1/signup?redirect_to=${encodeURIComponent(redirect)}`:'/auth/v1/signup';
+    const result=await supabaseRequest(signupPath,{method:'POST',body:{email,password,data:{full_name:name}}});
+    if(result?.access_token){
+      authSession=saveAuthSession(result);currentUser=authSession.user;await startApp();
+    }else{
+      $('registerSuccess').textContent=getEmailRedirectUrl()?'Conta criada. Abra o e-mail de confirmação e retorne por este link.':'Conta criada. Confirme o e-mail e depois volte a esta página para entrar.';
+      $('registerSuccess').style.display='block';
+      $('resendConfirmationBtn').classList.remove('hidden');
+    }
+  }catch(err){$('registerAlert').textContent=err.message;$('registerAlert').style.display='block';}
+  finally{button.disabled=false;}
+};
+$('resendConfirmationBtn').addEventListener('click',async()=>{
+ const button=$('resendConfirmationBtn'),email=$('regEmail').value.trim().toLowerCase();
+ button.disabled=true;
+ try{
+  const redirect=getEmailRedirectUrl();
+  await supabaseRequest('/auth/v1/resend',{method:'POST',body:{type:'signup',email,...(redirect?{options:{emailRedirectTo:redirect}}:{})}});
+  $('registerSuccess').textContent='Novo e-mail de confirmação enviado. Confira também o spam.';
+ }catch(err){$('registerAlert').textContent=err.message;$('registerAlert').style.display='block';}
+ finally{button.disabled=false;}
+});
+
+$('loginForm').onsubmit = async e => {
+  e.preventDefault();
+  const email = $('loginEmail').value.trim().toLowerCase();
+  const password = $('loginPassword').value;
+  const button=$('loginForm').querySelector('button[type="submit"]');
+  button.disabled=true;button.textContent='Entrando...';$('loginAlert').style.display='none';
+  try{
+    const result=await supabaseRequest('/auth/v1/token?grant_type=password',{method:'POST',body:{email,password}});
+    authSession=saveAuthSession(result);currentUser=authSession.user;await startApp();
+  }catch(err){
+    $('loginAlert').textContent=err.message;$('loginAlert').style.display='block';
+    $('loginResendStatus').style.display='none';
+    $('loginResendConfirm').classList.toggle('hidden',!err.message.toLowerCase().includes('email not confirmed'));
+  }
+  finally{button.disabled=false;button.textContent='Entrar';}
+};
+
+$('loginResendConfirm').addEventListener('click',async()=>{
+ const email=$('loginEmail').value.trim().toLowerCase(),button=$('loginResendConfirm');
+ if(!email){$('loginAlert').textContent='Informe seu e-mail para reenviar a confirmação.';$('loginAlert').style.display='block';return;}
+ button.disabled=true;$('loginAlert').style.display='none';
+ try{
+  const redirect=getEmailRedirectUrl();
+  await supabaseRequest('/auth/v1/resend',{method:'POST',body:{type:'signup',email,...(redirect?{options:{emailRedirectTo:redirect}}:{})}});
+  $('loginResendStatus').textContent='Novo e-mail enviado. Confira a caixa de entrada e o spam.';$('loginResendStatus').style.display='block';
+ }catch(err){$('loginAlert').textContent=err.message;$('loginAlert').style.display='block';}
+ finally{button.disabled=false;}
+});
+
+$('logoutBtn').onclick = async () => {
+  if(cloudPollTimer){clearInterval(cloudPollTimer);cloudPollTimer=null;}
+  await cloudSyncQueue;
+  try{const session=await refreshAuthSession();await supabaseRequest('/auth/v1/logout',{method:'POST',accessToken:session.access_token});}catch{}
+  localStorage.removeItem(SESSION_KEY);
+  authSession=null;
+  currentUser = null;
+  $('appScreen').classList.add('hidden');
+  $('authScreen').classList.remove('hidden');
+  $('loginForm').reset();
+};
+
+async function startApp(){
+  $('authScreen').classList.add('hidden');
+  $('appScreen').classList.remove('hidden');
+  $('loggedUserName').textContent = currentUser.user_metadata?.full_name||currentUser.user_metadata?.name||currentUser.email;
+  setSyncStatus('Carregando...');
+  try{
+    const loadResult=await loadUserData();
+    const defaultMonth=state.entries.map(entry=>entry.date?.slice(0,7)).filter(month=>month&&month>=monthNow).sort()[0]||monthNow;
+    ['dashMonth','filterMonth','budgetMonth','reportMonth'].forEach(id=>{if(!$(id).value)$(id).value=defaultMonth;});
+    $('date').value=dateNow;
+    renderAll();
+    setSyncStatus(loadResult.offline?'Offline':'Sincronizado');
+    startCloudPolling();
+  }catch(err){
+    $('appScreen').classList.add('hidden');
+    $('authScreen').classList.remove('hidden');
+    throw err;
+  }
+}
+
+function migrateStandalonePlanSeed(){
+ const seedExpenses=initialEntries.filter(entry=>entry.type==='despesa');
+ const seedIncomes=initialEntries.filter(entry=>entry.type==='receita');
+ const expenseIds=new Set(seedExpenses.map(entry=>entry.id));
+ const incomeIds=new Set(seedIncomes.map(entry=>entry.id));
+ if(!seedExpenses.every(seed=>state.entries.some(entry=>entry.id===seed.id)))return;
+ state.entries=state.entries.filter(entry=>!incomeIds.has(entry.id)&&!String(entry.id||'').startsWith('planilha_26_10_')&&!String(entry.id||'').startsWith('local_plan_2026_10_'));
+ state.entries=state.entries.map(entry=>expenseIds.has(entry.id)?{...entry,source:LOCAL_PLAN_SOURCE}:entry);
+ seedExpenses.forEach((entry,index)=>{
+  const installmentCount=Math.max(1,Number(String(entry.notes||'').match(/(\d+)\s*x/i)?.[1])||1);
+  const periodCount=Math.min(installmentCount,36);
+  const baseDate=new Date(`${entry.date}T00:00:00`);
+  for(let period=1;period<periodCount;period++){
+   const targetMonth=new Date(baseDate.getFullYear(),baseDate.getMonth()+period,1);
+   const lastDay=new Date(targetMonth.getFullYear(),targetMonth.getMonth()+1,0).getDate();
+   targetMonth.setDate(Math.min(baseDate.getDate(),lastDay));
+   const date=`${targetMonth.getFullYear()}-${String(targetMonth.getMonth()+1).padStart(2,'0')}-${String(targetMonth.getDate()).padStart(2,'0')}`;
+  state.entries.push({...entry,id:`local_plan_2026_10_${index+2}_${date.slice(0,7)}`,date,dueDate:date,status:'pendente',source:LOCAL_PLAN_SOURCE,notes:`Parcela ${period+1}/${installmentCount} - Previsão local`});
+  }
+ });
+ const incomeTemplates=seedIncomes.slice(0,4);
+ ['2026-11','2026-12'].forEach(month=>incomeTemplates.forEach((entry,index)=>{
+  const date=`${month}-01`;
+  state.entries.push({...entry,id:`local_plan_2026_10_income_${month}_${index+1}`,date,dueDate:date,category:/salario/i.test(entry.description)?'Salário':'Renda extra',status:'pendente',account:'Família',source:LOCAL_PLAN_SOURCE,notes:'Receita cadastrada; pagamento não confirmado'});
+ }));
+}
+
+function migrateLocalPlanIfNeeded(){
+ if(state.entries.some(entry=>entry.source===LEGACY_PLAN_SOURCE)){
+  state.entries=state.entries.map(entry=>entry.source===LEGACY_PLAN_SOURCE?{...entry,source:LOCAL_PLAN_SOURCE}:entry);
+  return true;
+ }
+ if(state.entries.some(entry=>entry.source===LOCAL_PLAN_SOURCE))return false;
+ const seedExpenses=initialEntries.filter(entry=>entry.type==='despesa');
+ if(!seedExpenses.length||!seedExpenses.every(seed=>state.entries.some(entry=>entry.id===seed.id)))return false;
+ migrateStandalonePlanSeed();
+ return true;
+}
+
+function cacheUserData(){
+ if(currentUser?.id)localStorage.setItem(`${DATA_PREFIX}${currentUser.id}`,JSON.stringify(state));
+}
+
+async function saveCloudData(){
+ if(!currentUser?.id)throw new Error('Nenhuma conta autenticada.');
+ const updatedAt=new Date().toISOString();
+ await authenticatedSupabaseRequest('/rest/v1/finance_data?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{user_id:currentUser.id,data:state,updated_at:updatedAt}});
+ lastCloudUpdatedAt=updatedAt;
+ hasUnsyncedChanges=false;
+ cacheUserData();
+}
+
+async function loadUserData(){
+ const legacyKey=DATA_PREFIX+currentUser.email;
+ const localKey=`${DATA_PREFIX}${currentUser.id}`;
+ let rows;
+ try{rows=await authenticatedSupabaseRequest(`/rest/v1/finance_data?select=data,updated_at&user_id=eq.${encodeURIComponent(currentUser.id)}&limit=1`);}
+ catch(err){
+  let local=null;
+  for(const key of [localKey,legacyKey]){try{const candidate=JSON.parse(localStorage.getItem(key)||'null');if(candidate&&Array.isArray(candidate.entries)){local=candidate;break;}}catch{}}
+  if(!local)throw err;
+  state={entries:local.entries,budgets:local.budgets&&typeof local.budgets==='object'?local.budgets:{}};
+  cacheUserData();
+  return {offline:true};
+ }
+ if(Array.isArray(rows)&&rows[0]?.data&&typeof rows[0].data==='object'){
+  lastCloudUpdatedAt=rows[0].updated_at||null;
+  const saved=rows[0].data;
+  state={entries:Array.isArray(saved.entries)?saved.entries:[],budgets:saved.budgets&&typeof saved.budgets==='object'?saved.budgets:{}};
+  if(migrateLocalPlanIfNeeded())await saveCloudData();
+ }else{
+  let local={};
+  try{local=JSON.parse(localStorage.getItem(localKey)||localStorage.getItem(legacyKey)||'{}');}catch{}
+  state={entries:Array.isArray(local.entries)&&local.entries.length?local.entries:initialEntries,budgets:local.budgets&&typeof local.budgets==='object'?local.budgets:{}};
+  migrateLocalPlanIfNeeded();
+  await saveCloudData();
+ }
+ cacheUserData();
+ return {offline:false};
+}
+
+function persist(){
+  cacheUserData();
+  renderAll();
+  setSyncStatus('Salvando...');
+  cloudSyncPending++;
+  cloudSyncQueue=cloudSyncQueue.catch(()=>{}).then(saveCloudData).then(()=>setSyncStatus('Sincronizado')).catch(err=>{
+    hasUnsyncedChanges=true;
+    setSyncStatus('Falha ao sincronizar');
+    const status=$('syncStatus');if(status)status.title=err.message;
+  }).finally(()=>{cloudSyncPending=Math.max(0,cloudSyncPending-1);});
+}
+
+async function pollCloudData(){
+ if(!currentUser?.id||document.hidden||cloudSyncPending)return;
+ try{
+  if(hasUnsyncedChanges){await saveCloudData();setSyncStatus('Sincronizado');return;}
+  const rows=await authenticatedSupabaseRequest(`/rest/v1/finance_data?select=data,updated_at&user_id=eq.${encodeURIComponent(currentUser.id)}&limit=1`);
+  if(!Array.isArray(rows)||!rows[0]?.data||!rows[0].updated_at||rows[0].updated_at===lastCloudUpdatedAt)return;
+  const saved=rows[0].data;
+  state={entries:Array.isArray(saved.entries)?saved.entries:[],budgets:saved.budgets&&typeof saved.budgets==='object'?saved.budgets:{}};
+  lastCloudUpdatedAt=rows[0].updated_at;
+  cacheUserData();renderAll();setSyncStatus('Atualizado em outro dispositivo');
+ }catch(err){setSyncStatus('Sem conexão');const status=$('syncStatus');if(status)status.title=err.message;}
+}
+
+function startCloudPolling(){
+ if(cloudPollTimer)clearInterval(cloudPollTimer);
+ cloudPollTimer=setInterval(pollCloudData,15000);
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollCloudData();});
+window.addEventListener('online',()=>{if(currentUser)pollCloudData();});
+
+function fillSelect(id,items,firstLabel){const el=$(id);if(!el)return;const old=el.value;el.innerHTML=(firstLabel!==undefined?`<option value="">${escapeHtml(firstLabel)}</option>`:'')+items.map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join('');if([...el.options].some(o=>o.value===old))el.value=old}
+function refreshCategorySelects(){
+ const expenseCategories=[...new Set([...categories.despesa,...state.entries.filter(e=>e.type==='despesa').map(e=>e.category).filter(Boolean)])];
+ const incomeCategories=[...new Set([...categories.receita,...state.entries.filter(e=>e.type==='receita').map(e=>e.category).filter(Boolean)])];
+ fillSelect('category',[...expenseCategories,...incomeCategories]);
+ fillSelect('filterCategory',[...expenseCategories,...incomeCategories],'Todas');
+ fillSelect('budgetCategory',expenseCategories);
+ const accounts=[...new Set(state.entries.map(e=>e.account).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+ fillSelect('dashAccount',accounts,'Todos');
+ const products=[...new Set(state.entries.map(e=>e.description).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+ fillSelect('trackProduct',products);
+}
+
+function entriesForMonth(month){return state.entries.filter(e=>!month||e.date?.startsWith(month))}
+function amountOf(list,type,status){return list.filter(e=>(!type||e.type===type)&&(!status||e.status===status)).reduce((s,e)=>s+Number(e.amount||0),0)}
+function monthLabel(m){if(!m)return 'Todos os meses';const [y,mo]=m.split('-');return `${mo}/${y}`}
+function setText(id,text){const el=$(id);if(el)el.textContent=text}
+
+function renderDashboard(){
+ const month=$('dashMonth').value||monthNow, account=$('dashAccount').value;
+ const list=entriesForMonth(month).filter(e=>!account||e.account===account);
+ const inc=amountOf(list,'receita','pago'),out=amountOf(list,'despesa','pago'),open=amountOf(list,'despesa','pendente');
+ setText('mIncome',money(inc));setText('mExpense',money(out));setText('mBalance',money(inc-out));setText('mOpen',money(open));
+ const planned=list.filter(entry=>entry.source===LOCAL_PLAN_SOURCE||entry.source===LEGACY_PLAN_SOURCE);
+ const plannedIncome=amountOf(planned,'receita',null),plannedExpense=amountOf(planned,'despesa',null);
+ setText('planIncome',money(plannedIncome));setText('planExpense',money(plannedExpense));
+ const plannedBalance=$('planBalance');if(plannedBalance){plannedBalance.textContent=money(plannedIncome-plannedExpense);plannedBalance.className=plannedIncome-plannedExpense>=0?'green':'red';}
+ setText('projectionNote',`${monthLabel(month)} · ${planned.length} previsão(ões); valores não confirmam pagamentos.`);
+ if($('mBalance')) $('mBalance').className='metric '+(inc-out>=0?'green':'red');
+ const cats={};list.filter(e=>e.type==='despesa').forEach(e=>{cats[e.category]=(cats[e.category]||0)+Number(e.amount||0)});
+ const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+ if($('categorySummary')) $('categorySummary').innerHTML=sorted.length?sorted.map(([c,v])=>`<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;gap:8px"><span>${escapeHtml(c)}</span><b>${money(v)}</b></div><progress max="${Math.max(...sorted.map(x=>x[1]),1)}" value="${v}"></progress></div>`).join(''):'Sem despesas para este mês.';
+ const upcoming=state.entries.filter(e=>e.status==='pendente'&&e.dueDate).sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).slice(0,6);
+ if($('upcoming')) $('upcoming').innerHTML=upcoming.length?upcoming.map(e=>`<div style="padding:8px 0;border-bottom:1px solid var(--border)"><b>${escapeHtml(e.description)}</b><br><span>${escapeHtml(e.dueDate.split('-').reverse().join('/'))} · ${escapeHtml(e.category)}</span><br><span class="${e.type==='receita'?'green':'red'}">${e.type==='receita'?'A receber':'A pagar'}: ${money(e.amount)}</span></div>`).join(''):'Nenhuma conta pendente com vencimento informado.';
+}
+
+function filteredEntries(){
+ const m=$('filterMonth').value,t=$('filterType').value,s=$('filterStatus').value,c=$('filterCategory').value,q=$('filterSearch').value.trim().toLocaleLowerCase('pt-BR');
+ return state.entries.filter(e=>(!m||e.date?.startsWith(m))&&(!t||e.type===t)&&(!s||e.status===s)&&(!c||e.category===c)&&(!q||`${e.description} ${e.notes||''} ${e.account||''}`.toLocaleLowerCase('pt-BR').includes(q))).sort((a,b)=>b.date.localeCompare(a.date));
+}
+
+function renderEntries(){
+ const list=filteredEntries(),body=$('entriesBody');
+ if(!body)return;
+ body.innerHTML=list.length?list.map(e=>`<tr><td>${escapeHtml(e.date?.split('-').reverse().join('/')||'')}</td><td><span class="pill ${e.type==='receita'?'in':'out'}">${e.type==='receita'?'Crédito':'Débito'}</span></td><td class="desc"><b>${escapeHtml(e.description)}</b>${e.notes?`<br><span class="note">${escapeHtml(e.notes)}</span>`:''}${e.dueDate?`<br><span class="note">Vence: ${escapeHtml(e.dueDate.split('-').reverse().join('/'))}</span>`:''}</td><td>${escapeHtml(e.category)}</td><td>${escapeHtml(e.account||'—')}</td><td class="${e.type==='receita'?'green':'red'}">${money(e.amount)}</td><td>${e.status==='pago'?'Pago/recebido':'Pendente'}</td><td><button class="secondary small" data-edit="${escapeHtml(e.id)}">Editar</button> <button class="danger small" data-delete="${escapeHtml(e.id)}">Excluir</button></td></tr>`).join(''):`<tr><td colspan="8" class="empty">Nenhum lançamento encontrado.</td></tr>`;
+ setText('entryCount',`${list.length} lançamento(s) · receitas: ${money(amountOf(list,'receita',null))} · despesas: ${money(amountOf(list,'despesa',null))}`);
+ body.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>editEntry(b.dataset.edit)));
+ body.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>deleteEntry(b.dataset.delete)));
+}
+
+function renderBudget(){
+ const month=$('budgetMonth').value||monthNow;const rows=categories.despesa.map(cat=>{
+  const key=`${month}|${cat}`,limit=Number(state.budgets[key]||0);
+  const spent=entriesForMonth(month).filter(e=>e.type==='despesa'&&e.category===cat).reduce((s,e)=>s+Number(e.amount||0),0);
+  if(!limit&&!spent)return '';
+  const pct=limit?Math.min(spent/limit*100,100):0,over=limit>0&&spent>limit;
+  return `<tr><td>${escapeHtml(cat)}</td><td>${money(limit)}</td><td>${money(spent)}</td><td class="${over?'red':'green'}">${limit?(over?'Acima do limite':`${Math.round(spent/limit*100)}% usado`):'Sem limite definido'}</td><td>${limit?`<progress max="100" value="${pct}"></progress>`:'—'}</td><td><button class="danger small" data-budget-delete="${escapeHtml(cat)}">Remover limite</button></td></tr>`;
+ }).filter(Boolean);
+ if($('budgetTable')) $('budgetTable').innerHTML=rows.length?`<div class="table-wrap"><table><thead><tr><th>Categoria</th><th>Limite</th><th>Gasto registrado</th><th>Situação</th><th>Progresso</th><th>Ação</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`:'<p class="note">Ainda não há limites definidos nem despesas nessas categorias para o mês selecionado.</p>';
+ $('budgetTable')?.querySelectorAll('[data-budget-delete]').forEach(b=>b.addEventListener('click',()=>{const key=`${month}|${b.dataset.budgetDelete}`;delete state.budgets[key];persist()}));
+}
+
+function renderProductTracking(){
+  const prod = $('trackProduct').value;
+  const container = $('productTrackingResult');
+  if(!container) return;
+  if(!prod){ container.innerHTML = '<p class="note">Selecione um produto para ver o histórico mensal.</p>'; return; }
+  
+  const matches = state.entries.filter(e => e.description.toLowerCase() === prod.toLowerCase());
+  const monthlyData = {};
+  matches.forEach(e => {
+    const m = e.date ? e.date.slice(0,7) : 'Outros';
+    monthlyData[m] = (monthlyData[m] || 0) + Number(e.amount || 0);
+  });
+  
+  const sortedMonths = Object.keys(monthlyData).sort();
+  const rows = sortedMonths.map(m => `<tr><td><b>${escapeHtml(monthLabel(m))}</b></td><td class="red">${money(monthlyData[m])}</td></tr>`);
+  
+  container.innerHTML = sortedMonths.length ? `
+    <h3>Evolução de: ${escapeHtml(prod)}</h3>
+    <div class="table-wrap"><table><thead><tr><th>Mês</th><th>Valor Gasto</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>
+  ` : '<p class="note">Nenhum registro encontrado para este produto.</p>';
+}
+
+function renderReport(){
+ const month=$('reportMonth').value||monthNow,list=entriesForMonth(month),inc=amountOf(list,'receita','pago'),out=amountOf(list,'despesa','pago'),pending=amountOf(list,null,'pendente');
+ setText('rIncome',money(inc));setText('rExpense',money(out));setText('rResult',money(inc-out));setText('rPending',money(pending));
+ const cats={};list.filter(e=>e.type==='despesa').forEach(e=>cats[e.category]=(cats[e.category]||0)+Number(e.amount||0));
+ const rows=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+ if($('reportDetails')) $('reportDetails').innerHTML=`<h3>Despesas por categoria — ${escapeHtml(monthLabel(month))}</h3>${rows.length?`<div class="table-wrap"><table><thead><tr><th>Categoria</th><th>Total registrado</th><th>Participação</th></tr></thead><tbody>${rows.map(([c,v])=>`<tr><td>${escapeHtml(c)}</td><td>${money(v)}</td><td>${out||amountOf(list,'despesa',null)?(v/(amountOf(list,'despesa',null)||1)*100).toFixed(1).replace('.',',')+'%':'—'}</td></tr>`).join('')}</tbody></table></div>`:'<p class="note">Sem despesas registradas neste mês.</p>'}`;
+}
+
+function renderAll(){refreshCategorySelects();renderDashboard();renderEntries();renderBudget();renderProductTracking();renderReport()}
+function resetForm(){ $('entryForm').reset();$('editId').value='';$('date').value=dateNow;$('formTitle').textContent='Adicionar lançamento';$('saveBtn').textContent='Salvar lançamento';$('cancelEdit').hidden=true;$('status').value='pago';$('isInstallment').value='no';$('totalInstallments').value='1';}
+
+function editEntry(id){
+ const e=state.entries.find(x=>x.id===id);if(!e)return;
+ $('editId').value=e.id;$('date').value=e.date;$('type').value=e.type;$('description').value=e.description;$('amount').value=e.amount;$('category').value=e.category;$('status').value=e.status;$('dueDate').value=e.dueDate||'';$('account').value=e.account||'';$('notes').value=e.notes||'';
+ $('isInstallment').value='no';$('totalInstallments').value='1';
+ $('formTitle').textContent='Editar lançamento';$('saveBtn').textContent='Salvar alterações';$('cancelEdit').hidden=false;
+ document.querySelector('[data-tab="lancamentos"]').click();$('description').focus();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function deleteEntry(id){const e=state.entries.find(x=>x.id===id);if(e&&confirm(`Excluir o lançamento "${e.description}"?`)){state.entries=state.entries.filter(x=>x.id!==id);persist()}}
+function csvEscape(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function exportCsv(list,filename){
+ const head=['Data','Tipo','Descrição','Categoria','Valor','Situação','Vencimento','Responsável/Conta','Observações'];
+ const lines=[head,...list.map(e=>[e.date,e.type==='receita'?'Crédito':'Débito',e.description,e.category,Number(e.amount).toFixed(2).replace('.',','),e.status,e.dueDate||'',e.account||'',e.notes||''])].map(row=>row.map(csvEscape).join(';'));
+ const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+ downloadBlob(blob,filename);
+}
+function downloadBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===b.dataset.tab));}));
+
+$('entryForm').addEventListener('submit',ev=>{
+ ev.preventDefault();const amount=Number($('amount').value);if(!(amount>0)){alert('Informe um valor maior que zero.');return}
+ const id=$('editId').value||uid();
+ const isInst = $('isInstallment').value === 'yes';
+ const totalInst = Math.max(1, parseInt($('totalInstallments').value || 1));
+ const baseDate = new Date($('date').value + 'T00:00:00');
+ 
+ if(isInst && totalInst > 1 && !$('editId').value){
+   for(let i=0; i<totalInst; i++){
+     const d = new Date(baseDate);
+     d.setMonth(d.getMonth() + i);
+     const dateStr = d.toISOString().split('T')[0];
+     const e = {
+       id: uid(),
+       date: dateStr,
+       type: $('type').value,
+       description: $('description').value.trim(),
+       amount: amount,
+       category: $('category').value,
+       status: $('status').value,
+       dueDate: dateStr,
+       account: $('account').value.trim() || 'Família',
+       notes: `Parcela ${i+1}/${totalInst}` + ($('notes').value ? ` - ${$('notes').value}` : '')
+     };
+     state.entries.push(e);
+   }
+ } else {
+   const old=state.entries.find(e=>e.id===id);
+   const e={
+     id,
+     date:$('date').value,
+     type:$('type').value,
+     description:$('description').value.trim(),
+     amount,
+     category:$('category').value,
+     status:$('status').value,
+     dueDate:$('dueDate').value,
+     account:$('account').value.trim(),
+     notes:$('notes').value.trim()
+   };
+   const idx=state.entries.findIndex(x=>x.id===id);
+   if(idx>=0) state.entries[idx]=e; else state.entries.push(e);
+ }
+ persist();resetForm();$('filterMonth').value=monthNow;
+});
+
+$('entryForm').addEventListener('reset',()=>setTimeout(()=>{if(!$('editId').value)resetForm()},0));
+$('cancelEdit').addEventListener('click',resetForm);
+['dashMonth','dashAccount'].forEach(id=>$(id)?.addEventListener('change',renderDashboard));
+['filterMonth','filterType','filterStatus','filterCategory'].forEach(id=>$(id)?.addEventListener('change',renderEntries));
+$('filterSearch')?.addEventListener('input',renderEntries);
+$('showAll')?.addEventListener('click',()=>{$('filterMonth').value='';$('filterType').value='';$('filterStatus').value='';$('filterCategory').value='';$('filterSearch').value='';renderEntries()});
+$('exportFiltered')?.addEventListener('click',()=>exportCsv(filteredEntries(),'lancamentos_filtrados.csv'));
+$('saveBudget')?.addEventListener('click',()=>{const month=$('budgetMonth').value||monthNow,cat=$('budgetCategory').value,amount=Number($('budgetAmount').value);if(!cat||!Number.isFinite(amount)||amount<=0){alert('Selecione uma categoria e informe um limite maior que zero.');return}state.budgets[`${month}|${cat}`]=amount;persist();$('budgetAmount').value='';});
+$('budgetMonth')?.addEventListener('change',renderBudget);
+$('trackProduct')?.addEventListener('change',renderProductTracking);
+$('refreshReport')?.addEventListener('click',renderReport);
+$('reportMonth')?.addEventListener('change',renderReport);
+$('backupJson')?.addEventListener('click',()=>downloadBlob(new Blob([JSON.stringify({...state,exportedAt:new Date().toISOString(),formatVersion:1},null,2)],{type:'application/json'}),`backup_financeiro_${dateNow}.json`));
+$('exportAllCsv')?.addEventListener('click',()=>exportCsv([...state.entries].sort((a,b)=>a.date.localeCompare(b.date)),'todos_lancamentos.csv'));
+$('importFile')?.addEventListener('change',async ev=>{
+ const file=ev.target.files?.[0];if(!file)return;
+ try{const data=JSON.parse(await file.text());if(!data||!Array.isArray(data.entries)||typeof data.budgets!=='object'||data.budgets===null)throw new Error('Formato inválido');
+ if(!confirm(`Importar ${data.entries.length} lançamento(s)? Isso substituirá os dados atuais.`))return;
+ state={entries:data.entries,budgets:data.budgets};persist();alert('Backup restaurado com sucesso.');
+ }catch(err){alert('Erro ao restaurar backup.\n'+err.message)}finally{ev.target.value=''}
+});
+$('clearData')?.addEventListener('click',()=>{if(confirm('Tem certeza? Todos os lançamentos e orçamentos serão apagados.')){state={entries:[],budgets:{}};persist();resetForm()}});
+
+async function restoreEmailConfirmation(){
+ const params=new URLSearchParams(location.hash.slice(1));
+ const authError=params.get('error_description')||params.get('error');
+ if(authError){
+  history.replaceState(null,'',location.pathname+location.search);
+  $('loginAlert').textContent=decodeURIComponent(authError.replace(/\+/g,' '));$('loginAlert').style.display='block';
+  return true;
+ }
+ const accessToken=params.get('access_token');
+ if(!accessToken)return false;
+ try{
+  const user=await supabaseRequest('/auth/v1/user',{accessToken});
+  const session=saveAuthSession({access_token:accessToken,refresh_token:params.get('refresh_token'),expires_in:Number(params.get('expires_in'))||3600,expires_at:Number(params.get('expires_at'))||undefined,user});
+  authSession=session;currentUser=session.user;
+  history.replaceState(null,'',location.pathname+location.search);
+  await startApp();
+ }catch(err){
+  history.replaceState(null,'',location.pathname+location.search);
+  $('loginAlert').textContent=`Não foi possível concluir a confirmação: ${err.message}`;$('loginAlert').style.display='block';
+ }
+ return true;
+}
+
+async function initializeAuth(){
+ if(await restoreEmailConfirmation())return;
+ const savedSession=localStorage.getItem(SESSION_KEY);
+ if(!savedSession)return;
+ try{
+  authSession=JSON.parse(savedSession);currentUser=authSession.user;
+  if(!currentUser?.id)throw new Error('Sessão inválida. Entre novamente.');
+  await refreshAuthSession();await startApp();
+ }catch(err){
+  localStorage.removeItem(SESSION_KEY);authSession=null;currentUser=null;
+  $('loginAlert').textContent=err.message;$('loginAlert').style.display='block';
+ }
+}
+initializeAuth();
+
+})();
+</script>
+</body>
+</html>

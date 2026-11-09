@@ -1,0 +1,3257 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#267568">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Finanças Família">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- Increment this value for every published release so open phones can detect it. -->
+<meta name="app-version" content="2026.11.07.01">
+<!-- Manifest PWA embutido para permitir instalar como aplicativo no celular -->
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Controle%20Financeiro%20Familiar%22%2C%22short_name%22%3A%22Finan%C3%A7as%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f7f6%22%2C%22theme_color%22%3A%22%23267568%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F2454%2F2454269.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2454/2454269.png">
+<title>Finanças da Família | Controle Financeiro</title>
+<!-- Biblioteca Chart.js para gráficos visuais interativos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy: #1f3b3a;
+  --blue: #267568;
+  --blue-hover: #1b5b51;
+  --bg: #f4f7f6;
+  --card: #ffffff;
+  --text: #263432;
+  --muted: #667874;
+  --green: #197a59;
+  --red: #b94a48;
+  --border: #dbe5e1;
+  --input-bg: #ffffff;
+  --shadow: 0 4px 14px rgba(31, 59, 58, 0.08);
+  --radius: 10px;
+}
+
+[data-theme="dark"] {
+  --navy: #2d5a54;
+  --blue: #38b2ac;
+  --blue-hover: #2c9792;
+  --bg: #121817;
+  --card: #1b2624;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --green: #34d399;
+  --red: #f87171;
+  --border: #2d3e3b;
+  --input-bg: #22302d;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  transition: background 0.2s, color 0.2s;
+}
+
+header {
+  background: linear-gradient(125deg, #1f3b3a 0%, #267568 100%);
+  color: #fff;
+  padding: 18px 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+.wrap { max-width: 1200px; margin: auto; padding: 0 16px; }
+.header-flex { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
+header h1 { margin: 0 0 4px; font-size: 1.6rem; letter-spacing: -0.3px; }
+header p { margin: 0; color: #e3efec; font-size: 0.88rem; }
+
+.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.user-badge {
+  background: rgba(255,255,255,0.16);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  backdrop-filter: blur(4px);
+}
+
+.theme-toggle-btn {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  padding: 6px 11px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+.theme-toggle-btn:hover { background: rgba(255,255,255,0.28); }
+
+main { padding: 22px 0 50px; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.tab {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 650;
+  font-size: 0.92rem;
+  transition: all 0.15s ease;
+}
+.tab:hover { border-color: var(--blue); color: var(--blue); }
+.tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.panel { display: none; }
+.panel.active { display: block; }
+
+.cards { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 20px; }
+.card, .section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  transition: background 0.2s, border 0.2s;
+}
+.metric-label { font-size: .84rem; color: var(--muted); font-weight: 500; }
+.metric { font-size: clamp(1.2rem, 3vw, 1.7rem); font-weight: 800; margin-top: 6px; overflow-wrap: anywhere; }
+.green { color: var(--green); }
+.red { color: var(--red); }
+.blue { color: var(--blue); }
+
+.section { margin-bottom: 20px; }
+.section h2 { font-size: 1.15rem; margin: 0 0 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.section h3 { font-size: 1.02rem; margin: 16px 0 10px; }
+
+.projection-band {
+  margin: 0 0 20px;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.projection-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.projection-heading h2 { font-size: 1.05rem; margin: 0 0 3px; }
+.projection-heading p { margin: 0; }
+.projection-metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; margin-top: 14px; }
+.projection-metrics > div { border-left: 3px solid var(--border); padding: 2px 0 2px 12px; min-width: 0; }
+.projection-metrics > div:nth-child(1) { border-color: var(--green); }
+.projection-metrics > div:nth-child(2) { border-color: var(--red); }
+.projection-metrics > div:nth-child(3) { border-color: var(--blue); }
+.projection-metrics strong { display: block; font-size: 1.25rem; margin-top: 3px; overflow-wrap: anywhere; }
+
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.chart-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  position: relative;
+  min-height: 290px;
+}
+.chart-box h3 { margin: 0 0 12px; font-size: 0.98rem; color: var(--text); }
+.chart-box canvas { max-height: 250px; width: 100%!important; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+label { display: block; font-size: .84rem; font-weight: 650; color: var(--text); opacity: 0.88; margin-bottom: 5px; }
+input, select, textarea {
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text);
+  font: inherit;
+  min-width: 0;
+  transition: border-color 0.15s, outline 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--blue);
+  border-color: var(--blue);
+}
+
+.password-control { position: relative; }
+.password-control input { padding-right: 76px; }
+.password-toggle {
+  position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+  padding: 5px 8px; background: transparent; color: var(--blue); font-size: .82rem;
+  border: 0; cursor: pointer; border-radius: 4px;
+}
+.password-toggle:hover { background: rgba(0,0,0,0.06); }
+
+.month-stepper { display: flex; align-items: center; gap: 6px; }
+.btn-step {
+  padding: 9px 12px; background: var(--card); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; cursor: pointer; font-weight: bold;
+}
+.btn-step:hover { background: var(--border); }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+button, .file-label {
+  font: inherit; cursor: pointer; border: 0; border-radius: 8px;
+  padding: 10px 14px; font-weight: 650; font-size: 0.9rem;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all 0.15s ease;
+}
+button:disabled { opacity: .55; cursor: not-allowed; }
+.primary { background: var(--blue); color: #fff; }
+.primary:hover:not(:disabled) { background: var(--blue-hover); }
+.secondary { background: rgba(38, 117, 104, 0.12); color: var(--text); }
+.secondary:hover:not(:disabled) { background: rgba(38, 117, 104, 0.22); }
+.danger { background: rgba(185, 74, 72, 0.15); color: var(--red); }
+.danger:hover:not(:disabled) { background: rgba(185, 74, 72, 0.25); }
+.success { background: rgba(25, 122, 89, 0.15); color: var(--green); }
+.success:hover:not(:disabled) { background: rgba(25, 122, 89, 0.25); }
+.small { padding: 5px 9px; font-size: .82rem; }
+
+.filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 14px; }
+.filters > div { min-width: 140px; flex: 1; }
+
+.table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
+table { width: 100%; border-collapse: collapse; min-width: 760px; }
+th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 0.9rem; }
+th { background: rgba(38, 117, 104, 0.08); color: var(--text); font-weight: 700; font-size: .83rem; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: rgba(38, 117, 104, 0.03); }
+td.desc { white-space: normal; min-width: 160px; }
+
+.empty { text-align: center; color: var(--muted); padding: 28px; }
+.note { color: var(--muted); font-size: .88rem; }
+.pill { display: inline-block; padding: 4px 8px; border-radius: 99px; font-size: .78rem; font-weight: 700; }
+.pill.in { background: rgba(25, 122, 89, 0.15); color: var(--green); }
+.pill.out { background: rgba(185, 74, 72, 0.15); color: var(--red); }
+.pill.receipt { background: rgba(38, 117, 104, 0.15); color: var(--blue); cursor: pointer; }
+
+progress { width: 100%; height: 12px; accent-color: var(--blue); border-radius: 6px; overflow: hidden; }
+
+/* Comprovantes e Anexos */
+.receipt-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--input-bg);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.receipt-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--blue);
+  word-break: break-all;
+}
+
+/* Janelas Sobrepostas (Modais) */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+  display: none; align-items: center; justify-content: center; z-index: 1000;
+  backdrop-filter: blur(3px); padding: 16px;
+}
+.modal-overlay.active { display: flex; }
+.modal-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; max-width: 780px; width: 100%; max-height: 90vh;
+  overflow-y: auto; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.modal-head h3 { margin: 0; font-size: 1.25rem; }
+.btn-close {
+  background: transparent; border: 0; font-size: 1.5rem; cursor: pointer;
+  color: var(--muted); padding: 0 6px; line-height: 1;
+}
+.btn-close:hover { color: var(--red); }
+
+/* Notificações Flutuantes */
+.toast-box {
+  position: fixed; bottom: 20px; right: 20px; z-index: 2000;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  background: var(--navy); color: #fff; padding: 12px 18px; border-radius: 8px;
+  font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  animation: slideIn 0.25s ease;
+}
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* Banner Informativo */
+.info-banner {
+  background: rgba(38, 117, 104, 0.12);
+  border: 1px solid rgba(38, 117, 104, 0.3);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Tela de Entrada Simplificada */
+.auth-wrapper { display: flex; align-items: center; justify-content: center; min-height: 85vh; padding: 20px; }
+.auth-card {
+  width: 100%; max-width: 440px; background: var(--card);
+  border: 1px solid var(--border); border-radius: 14px; padding: 30px;
+  box-shadow: var(--shadow);
+}
+.auth-card h1 { margin: 0 0 6px; font-size: 1.6rem; color: var(--blue); text-align: center; }
+.auth-card p.subtitle { margin: 0 0 20px; color: var(--muted); text-align: center; font-size: 0.92rem; }
+.alert-box { padding: 11px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 16px; text-align: center; display: none; }
+.alert-error { background: rgba(185, 74, 72, 0.15); color: var(--red); }
+.alert-success { background: rgba(25, 122, 89, 0.15); color: var(--green); }
+.quick-login-badge {
+  background: rgba(38, 117, 104, 0.1); border: 1px solid rgba(38, 117, 104, 0.25);
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.86rem; color: var(--text);
+}
+.sync-config { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 0.88rem; }
+.sync-config summary { cursor: pointer; color: var(--blue); font-weight: 650; }
+.sync-status { font-size: .8rem; color: #e3efec; }
+
+.hidden { display: none !important; }
+
+/* Tag Buttons para Seleção Rápida de Responsável */
+.tag-btn {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  transition: all 0.15s;
+}
+.tag-btn:hover, .tag-btn:active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+
+/* Lista de Cartões Mobile para Lançamentos */
+.mobile-cards-list {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+.entry-mobile-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.entry-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.entry-card-amount {
+  font-size: 1.15rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.entry-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.entry-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.entry-card-notes {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.entry-card-date {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.entry-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* Barra de Navegação Inferior para Celular */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 2147483647 !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.mobile-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  padding: 6px 0;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  font-size: 0.72rem;
+  font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-nav-item.active {
+  color: var(--blue);
+}
+.mobile-nav-icon {
+  font-size: 1.28rem;
+  line-height: 1.2;
+}
+.mobile-nav-center {
+  transform: translateY(-8px);
+}
+.mobile-nav-center .mobile-nav-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+  box-shadow: 0 4px 12px rgba(38, 117, 104, 0.4);
+}
+.mobile-nav-center .mobile-nav-label {
+  margin-top: 2px;
+  color: var(--blue);
+  font-weight: 700;
+}
+
+@media(max-width: 880px) {
+  .cards { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .form-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .chart-grid { grid-template-columns: 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+}
+
+@media(max-width: 768px) {
+  body {
+    padding-bottom: 84px !important; /* Espaço para a barra de navegação inferior */
+  }
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+  .tabs::-webkit-scrollbar {
+    height: 4px;
+  }
+  .desktop-table {
+    display: none !important;
+  }
+  .mobile-cards-list {
+    display: flex;
+  }
+  .mobile-bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+}
+
+@media(max-width: 560px) {
+  .cards { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .projection-metrics { grid-template-columns: 1fr; gap: 12px; }
+  .header-flex { align-items: flex-start; }
+  header h1 { font-size: 1.3rem; }
+  .section h2 { font-size: 1.05rem; }
+  input, select, textarea { font-size: 16px !important; } /* Evita zoom automático no iOS Safari */
+}
+
+/* O Netlify injeta um badge fixo; ocultamos o badge, sem esconder links da ajuda. */
+[data-netlify-badge],
+.netlify-badge,
+#netlify-badge,
+iframe[src*="netlify"],
+div[class*="netlify"],
+div[id*="netlify"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+}
+</style>
+</head>
+<body>
+
+<div id="toastContainer" class="toast-box"></div>
+
+<!-- ========================================== -->
+<!-- TELA DE ENTRADA / ACESSO AO SISTEMA        -->
+<!-- ========================================== -->
+<div id="authScreen" class="auth-wrapper">
+  <div class="auth-card" id="loginCardBox">
+    <h1>💰 Controle Financeiro</h1>
+    <p class="subtitle">Acesso rápido, fácil e sem burocracia</p>
+    
+    <div id="loginAlert" class="alert-box alert-error"></div>
+    <div id="loginSuccess" class="alert-box alert-success"></div>
+
+    <div class="quick-login-badge">
+      ⚡ <b>Acesso Direto:</b> Entre diretamente no sistema! Não necessita de e-mail nem de conexão com a internet para começar.
+    </div>
+
+    <!-- Formulário Rápido Local (Padrão e Fácil) -->
+    <form id="quickLoginForm">
+      <div style="margin-bottom:14px">
+        <label for="localUserName">Seu Nome ou Perfil</label>
+        <input type="text" id="localUserName" value="Família" required placeholder="Ex.: Família, João, Pessoal">
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label for="localUserPin">Senha ou Código PIN (Opcional)</label>
+        <div class="password-control">
+          <input type="password" id="localUserPin" placeholder="Deixe em branco para entrar sem senha">
+          <button class="password-toggle" type="button" id="togglePinPassword" data-password-target="localUserPin" aria-controls="localUserPin" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+        </div>
+        <span class="note" style="font-size:0.78rem">Se você já definiu uma senha para este perfil, digite-a. Caso contrário, deixe vazia.</span>
+      </div>
+
+      <div style="margin-bottom:18px;display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="rememberMe" checked style="width:auto">
+        <label for="rememberMe" style="margin:0;cursor:pointer;font-weight:normal">Lembrar meu acesso neste aparelho</label>
+      </div>
+
+      <button type="submit" class="primary" style="width:100%;padding:12px;font-size:1.02rem">
+        🚀 Entrar no Sistema
+      </button>
+    </form>
+
+    <!-- Perfis Utilizados Anteriormente -->
+    <div id="recentProfilesBox" style="margin-top:14px;display:none">
+      <label style="font-size:0.8rem">Perfis já utilizados neste aparelho:</label>
+      <div id="recentProfilesList" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+
+    <!-- Opção Avançada: Sincronização em Nuvem (Supabase) -->
+    <details class="sync-config" id="cloudConfigDetails">
+      <summary>☁️ Sincronizar na Nuvem (Supabase - Opcional)</summary>
+      <p class="note" style="margin:8px 0">Conecte com seu projeto na nuvem caso queira sincronizar seus lançamentos entre o computador e o celular.</p>
+      
+      <div style="margin-bottom:10px">
+        <label for="supabaseUrl">Endereço (URL) do projeto</label>
+        <input id="supabaseUrl" type="url" placeholder="https://seu-projeto.supabase.co">
+      </div>
+      <div style="margin-bottom:10px">
+        <label for="supabasePublicKey">Chave pública de acesso (anon)</label>
+        <input id="supabasePublicKey" type="text" autocomplete="off" spellcheck="false" placeholder="eyJhbGci...">
+      </div>
+      <button type="button" class="secondary small" id="saveSupabaseConfig" style="width:100%;margin-bottom:10px">Salvar Conexão com a Nuvem</button>
+
+      <hr style="border:0;border-top:1px solid var(--border);margin:12px 0">
+      
+      <form id="cloudLoginForm">
+        <div style="margin-bottom:10px">
+          <label for="cloudEmail">E-mail cadastrado na nuvem</label>
+          <input type="email" id="cloudEmail" placeholder="seu@email.com">
+        </div>
+        <div style="margin-bottom:10px">
+          <label for="cloudPassword">Senha da nuvem</label>
+          <div class="password-control">
+            <input type="password" id="cloudPassword" placeholder="••••••••" autocomplete="current-password">
+            <button class="password-toggle" type="button" data-password-target="cloudPassword" aria-controls="cloudPassword" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button type="submit" class="secondary" id="btnCloudLogin" style="flex:1">Entrar pela Nuvem</button>
+          <button type="button" class="secondary" id="btnCloudRegister" style="flex:1">Cadastrar Conta</button>
+        </div>
+      </form>
+      <p id="supabaseConfigStatus" class="note" style="margin-top:8px" aria-live="polite"></p>
+    </details>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- TELA PRINCIPAL DO APLICATIVO               -->
+<!-- ========================================== -->
+<div id="appScreen" class="hidden">
+<header>
+  <div class="wrap header-flex">
+    <div>
+      <h1>💰 Controle Financeiro Familiar</h1>
+      <p>Gestão completa de receitas, despesas, comprovantes e conciliação bancária.</p>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle-btn" id="themeToggleBtn" title="Alternar entre Tema Claro e Escuro">
+        <span id="themeIcon">🌙</span> <span id="themeText">Modo Escuro</span>
+      </button>
+      <div class="user-badge">
+        <span id="loggedUserName" style="font-weight:700">Família</span>
+        <span class="sync-status" id="syncStatus" role="status" aria-live="polite">🟢 Modo Local</span>
+        <span id="appUpdateStatus" class="sync-status" role="status" aria-live="polite">Verificando atualizações...</span>
+        <button class="secondary small" id="btnUpdateApp" type="button" title="Carregar a versão mais recente publicada">🔄 Atualizar app</button>
+        <button class="secondary small" id="profileSettingsBtn" title="Segurança e Senha" style="padding:4px 8px;font-size:0.78rem">🔒 Senha</button>
+        <button class="danger small" id="logoutBtn" style="padding:4px 8px;font-size:0.78rem">Sair</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="tabs" aria-label="Abas do controle financeiro">
+    <button class="tab active" data-tab="painel">📊 Visão Geral</button>
+    <button class="tab" data-tab="lancamentos">💳 Lançamentos</button>
+    <button class="tab" data-tab="orcamento">🎯 Orçamento</button>
+    <button class="tab" data-tab="acompanhamento">📈 Acompanhamento de Produtos</button>
+    <button class="tab" data-tab="casal">👥 Casal & Celular</button>
+    <button class="tab" data-tab="relatorios">📑 Relatórios</button>
+    <button class="tab" data-tab="dados">💾 Dados e Backup</button>
+  </nav>
+
+  <!-- Banner com Atalho de Dados da Planilha -->
+  <div class="info-banner" id="sheetDataBanner">
+    <div>
+      <b>📊 Dados da Planilha Integrados:</b> Todas as 52 despesas, parcelamentos futuros e 4 fontes de receitas estão cadastradas no sistema.
+    </div>
+    <button type="button" class="primary small" id="btnRecarregarPlanilhaBanner">
+      🔄 Recarregar Dados da Planilha Oficial
+    </button>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PAINEL / VISÃO GERAL COM GRÁFICOS          -->
+  <!-- ========================================== -->
+  <section class="panel active" id="painel">
+    <div class="filters">
+      <div>
+        <label for="dashMonth">Mês de referência</label>
+        <div class="month-stepper">
+          <button class="btn-step" type="button" id="btnPrevDashMonth" title="Mês anterior">◀</button>
+          <input id="dashMonth" type="month">
+          <button class="btn-step" type="button" id="btnNextDashMonth" title="Próximo mês">▶</button>
+        </div>
+      </div>
+      <div>
+        <label for="dashAccount">Conta / Responsável</label>
+        <select id="dashAccount"><option value="">Todos os responsáveis</option></select>
+      </div>
+    </div>
+
+    <!-- Indicadores Numéricos -->
+    <div class="cards">
+      <div class="card"><div class="metric-label">Receitas Recebidas</div><div class="metric green" id="mIncome">R$ 0,00</div></div>
+      <div class="card"><div class="metric-label">Despesas Pagas</div><div class="metric red" id="mExpense">R$ 0,00</div></div>
+      <div class="card"><div class="metric-label">Saldo do Mês</div><div class="metric blue" id="mBalance">R$ 0,00</div></div>
+      <div class="card"><div class="metric-label">Contas em Aberto</div><div class="metric" id="mOpen">R$ 0,00</div></div>
+    </div>
+
+    <!-- Faixa de Previsão / Planejamento -->
+    <div class="projection-band">
+      <div class="projection-heading">
+        <div>
+          <h2>Previsão Mensal (Planejado)</h2>
+          <p class="note" id="projectionNote">Valores previstos e parcelamentos futuros.</p>
+        </div>
+        <span class="pill" style="background:rgba(38, 117, 104, 0.15);color:var(--blue)">PLANEJAMENTO</span>
+      </div>
+      <div class="projection-metrics">
+        <div><span class="metric-label">Receitas Previstas</span><strong class="green" id="planIncome">R$ 0,00</strong></div>
+        <div><span class="metric-label">Despesas Previstas</span><strong class="red" id="planExpense">R$ 0,00</strong></div>
+        <div><span class="metric-label">Saldo Previsto</span><strong class="blue" id="planBalance">R$ 0,00</strong></div>
+      </div>
+    </div>
+
+    <!-- GRÁFICOS VISUAIS CHART.JS -->
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>Despesas por Categoria (Mês Selecionado)</h3>
+        <canvas id="chartExpensesCategory"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Evolução: Receitas vs Despesas (Últimos Meses)</h3>
+        <canvas id="chartIncomeVsExpense"></canvas>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="section">
+        <h2>Resumo por Categoria</h2>
+        <div id="categorySummary" class="note">Adicione lançamentos para ver o resumo.</div>
+      </div>
+      <div class="section">
+        <h2>Próximas Contas a Vencer</h2>
+        <div id="upcoming" class="note">Nenhuma conta cadastrada.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- LANÇAMENTOS E EXTRATOS                     -->
+  <!-- ========================================== -->
+  <section class="panel" id="lancamentos">
+    <div class="section">
+      <h2 id="formTitle">Adicionar Lançamento</h2>
+      <form id="entryForm">
+        <input type="hidden" id="editId">
+        <div class="form-grid">
+          <div><label for="date">Data do Lançamento</label><input id="date" type="date" required></div>
+          <div><label for="type">Tipo</label><select id="type"><option value="despesa">Despesa / Débito</option><option value="receita">Receita / Crédito</option></select></div>
+          <div><label for="description">Descrição / Produto / Estabelecimento</label><input id="description" placeholder="Ex.: Supermercado, Aluguel, Posto..." required maxlength="120"></div>
+          <div><label for="amount">Valor (R$)</label><input id="amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00" required></div>
+          <div><label for="category">Categoria</label><select id="category"></select></div>
+          <div><label for="status">Situação do Pagamento</label><select id="status"><option value="pago">Pago / Recebido</option><option value="pendente">Pendente</option></select></div>
+          <div><label for="dueDate">Vencimento (opcional)</label><input id="dueDate" type="date"></div>
+          <div>
+            <label for="account">Responsável / Conta / Cartão</label>
+            <input id="account" placeholder="Ex.: Família, Carteira, Nubank..." maxlength="80">
+            <div class="quick-tags" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+              <button type="button" class="tag-btn" data-set-account="Tamir">🧔 Tamir</button>
+              <button type="button" class="tag-btn" data-set-account="Tamires">👩 Tamires</button>
+              <button type="button" class="tag-btn" data-set-account="Família">🏠 Família</button>
+              <button type="button" class="tag-btn" data-set-account="Nubank">💳 Nubank</button>
+            </div>
+          </div>
+          <div><label for="isInstallment">Compra Parcelada?</label><select id="isInstallment"><option value="no">Não (Lançamento único)</option><option value="yes">Sim (Gerar parcelas mensais)</option></select></div>
+          <div><label for="totalInstallments">Quantidade de Parcelas</label><input id="totalInstallments" type="number" min="1" max="240" value="1"></div>
+          
+          <!-- ANEXO DE COMPROVANTE -->
+          <div style="grid-column: 1 / -1">
+            <label>📎 Comprovante / Recibo (Foto ou Arquivo PDF)</label>
+            <div class="receipt-upload-area">
+              <input type="file" id="receiptFileInput" accept="image/*,application/pdf" style="display:none">
+              <button type="button" class="secondary small" onclick="$('receiptFileInput').click()">📁 Escolher Arquivo do Comprovante</button>
+              <div id="receiptPreviewBox" class="receipt-preview" style="display:none">
+                <span id="receiptFileName">comprovante.jpg</span>
+                <button type="button" class="danger small" id="removeReceiptBtn" style="padding:2px 6px">✕ Remover</button>
+              </div>
+              <span class="note" id="receiptHelperText">Nenhum comprovante anexado (tamanho máximo: 3MB)</span>
+            </div>
+          </div>
+
+          <div style="grid-column: 1 / -1"><label for="notes">Observações (opcional)</label><input id="notes" placeholder="Detalhes adicionais, forma de pagamento, código de barras..." maxlength="250"></div>
+        </div>
+        <div class="actions">
+          <button class="primary" type="submit" id="saveBtn">💾 Salvar Lançamento</button>
+          <button class="secondary" type="button" id="cancelEdit" hidden>Cancelar Edição</button>
+          <button class="secondary" type="reset" id="clearForm">Limpar Formulário</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="section">
+      <h2>
+        <span>Planilha de Lançamentos</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="secondary small" id="btnRestaurarPlanilhaTabela" type="button" title="Recarregar todos os dados da planilha original">
+            📥 Recarregar Planilha Oficial
+          </button>
+          <button class="primary small" id="openOfxImportBtn" type="button" style="font-size:0.88rem">
+            📥 Importar Extrato Bancário (OFX / CSV)
+          </button>
+        </div>
+      </h2>
+      
+      <div class="filters">
+        <div>
+          <label for="filterMonth">Mês</label>
+          <div class="month-stepper">
+            <button class="btn-step" type="button" id="btnPrevFilterMonth">◀</button>
+            <input id="filterMonth" type="month">
+            <button class="btn-step" type="button" id="btnNextFilterMonth">▶</button>
+          </div>
+        </div>
+        <div>
+          <label for="filterType">Tipo</label>
+          <select id="filterType"><option value="">Todos</option><option value="receita">Receitas / Créditos</option><option value="despesa">Despesas / Débitos</option></select>
+        </div>
+        <div>
+          <label for="filterStatus">Situação</label>
+          <select id="filterStatus"><option value="">Todas</option><option value="pago">Pago / Recebido</option><option value="pendente">Pendente</option></select>
+        </div>
+        <div>
+          <label for="filterCategory">Categoria</label>
+          <select id="filterCategory"><option value="">Todas</option></select>
+        </div>
+        <div>
+          <label for="filterSearch">Buscar Descrição / Observações</label>
+          <input id="filterSearch" placeholder="Digite para buscar...">
+        </div>
+      </div>
+
+      <div class="actions" style="margin:0 0 12px">
+        <button class="secondary small" id="exportFiltered">📄 Exportar Tabela Filtrada em Planilha (CSV)</button>
+        <button class="secondary small" id="showAll">🔄 Limpar Todos os Filtros</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="desktop-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Descrição / Produto</th>
+              <th>Categoria</th>
+              <th>Responsável</th>
+              <th>Valor</th>
+              <th>Situação (Clique para alterar)</th>
+              <th>Comprovante</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="entriesBody"></tbody>
+        </table>
+        
+        <!-- Lista de Cartões Otimizados para Celular -->
+        <div id="entriesMobileList" class="mobile-cards-list"></div>
+      </div>
+      <p id="entryCount" class="note"></p>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- ORÇAMENTO COM GRÁFICO DE BARRAS            -->
+  <!-- ========================================== -->
+  <section class="panel" id="orcamento">
+    <div class="section">
+      <h2>Planejamento Mensal por Categoria</h2>
+      <p class="note">Defina o limite máximo de gastos para cada categoria no mês selecionado.</p>
+      <div class="form-grid">
+        <div>
+          <label for="budgetMonth">Mês do Orçamento</label>
+          <input id="budgetMonth" type="month">
+        </div>
+        <div>
+          <label for="budgetCategory">Categoria</label>
+          <select id="budgetCategory"></select>
+        </div>
+        <div>
+          <label for="budgetAmount">Limite Mensal Desejado (R$)</label>
+          <input id="budgetAmount" type="number" min="0" step="0.01" placeholder="0,00">
+        </div>
+        <div style="display:flex;align-items:end">
+          <button class="primary" id="saveBudget" type="button">Salvar Limite</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico de Comparação de Limites -->
+    <div class="chart-box" style="margin-bottom:20px">
+      <h3>Comparativo: Limite Definido vs Gasto Realizado por Categoria</h3>
+      <canvas id="chartBudgetComparison"></canvas>
+    </div>
+
+    <div class="section">
+      <h2>Tabela de Limites e Gastos</h2>
+      <div id="budgetTable"></div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- ACOMPANHAMENTO DE PRODUTOS COM LINHA       -->
+  <!-- ========================================== -->
+  <section class="panel" id="acompanhamento">
+    <div class="section">
+      <h2>Acompanhamento de Produtos e Valores Mês a Mês</h2>
+      <p class="note">Selecione qualquer produto ou serviço da planilha para visualizar seu histórico e gráfico de gastos ao longo dos meses.</p>
+      <div class="filters">
+        <div style="max-width:380px">
+          <label for="trackProduct">Produto / Descrição</label>
+          <select id="trackProduct"></select>
+        </div>
+      </div>
+
+      <!-- Gráfico de Linha do Produto -->
+      <div class="chart-box" style="margin-top:16px;margin-bottom:16px">
+        <h3>Evolução Mensal do Gasto</h3>
+        <canvas id="chartProductHistory"></canvas>
+      </div>
+
+      <div id="productTrackingResult"></div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- RELATÓRIOS E BALANÇO                       -->
+  <!-- ========================================== -->
+  <section class="panel" id="relatorios">
+    <div class="section">
+      <h2>Relatório Mensal Consolidado</h2>
+      <div class="form-grid">
+        <div>
+          <label for="reportMonth">Mês de Referência</label>
+          <input id="reportMonth" type="month">
+        </div>
+        <div style="display:flex;align-items:end">
+          <button class="primary" id="refreshReport" type="button">Atualizar Relatório</button>
+        </div>
+      </div>
+      <div class="cards" style="margin-top:16px">
+        <div class="card"><div class="metric-label">Receitas Realizadas</div><div class="metric green" id="rIncome">R$ 0,00</div></div>
+        <div class="card"><div class="metric-label">Despesas Pagas</div><div class="metric red" id="rExpense">R$ 0,00</div></div>
+        <div class="card"><div class="metric-label">Resultado Líquido</div><div class="metric blue" id="rResult">R$ 0,00</div></div>
+        <div class="card"><div class="metric-label">Total de Contas Pendentes</div><div class="metric" id="rPending">R$ 0,00</div></div>
+      </div>
+      <div id="reportDetails"></div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- DADOS E CÓPIAS DE SEGURANÇA (BACKUP)       -->
+  <!-- ========================================== -->
+  <section class="panel" id="dados">
+    <div class="section">
+      <h2>Exportar e Restaurar Dados</h2>
+      <p>Mantenha sempre uma cópia de segurança dos seus registros financeiros. Você pode restaurá-la a qualquer momento em outro navegador ou computador.</p>
+      <div class="actions">
+        <button class="success" id="btnRestaurarPlanilhaOriginal">📥 Carregar / Restaurar Dados da Planilha Oficial (512 itens)</button>
+        <button class="primary" id="backupJson">💾 Baixar Cópia Completa (Arquivo JSON)</button>
+        <button class="secondary" id="exportAllCsv">📊 Baixar Todos os Lançamentos (CSV)</button>
+      </div>
+      <hr style="border:0;border-top:1px solid var(--border);margin:24px 0">
+      
+      <label for="importFile" style="font-size:1rem;font-weight:700">Restaurar Cópia de Segurança Externa (Arquivo JSON)</label>
+      <input id="importFile" type="file" accept=".json,application/json" style="margin-top:8px">
+      
+      <div class="actions" style="margin-top:24px">
+        <button class="danger" id="clearData">🗑️ Apagar Todos os Lançamentos deste Perfil</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- MODO CASAL & ACESSO NO CELULAR             -->
+  <!-- ========================================== -->
+  <section class="panel" id="casal">
+    <!-- Divisão Financeira do Casal -->
+    <div class="section">
+      <h2>
+        <span>👥 Divisão e Gastos do Casal</span>
+        <div style="font-size:0.9rem;font-weight:normal">
+          <label for="casalMonth" style="display:inline;margin-right:6px">Mês:</label>
+          <input id="casalMonth" type="month" style="width:auto;display:inline-block">
+        </div>
+      </h2>
+      <p class="note">Acompanhe quem realizou cada despesa no mês e a proporção de cada um nos gastos familiares.</p>
+
+      <div class="cards" style="margin-top:16px">
+        <div class="card">
+          <div class="metric-label">🧔 Gastos do Tamir</div>
+          <div class="metric blue" id="mCasalTamir">R$ 0,00</div>
+        </div>
+        <div class="card">
+          <div class="metric-label">👩 Gastos da Tamires</div>
+          <div class="metric green" id="mCasalTamires">R$ 0,00</div>
+        </div>
+        <div class="card">
+          <div class="metric-label">🏠 Despesas Comuns / Família</div>
+          <div class="metric red" id="mCasalFamilia">R$ 0,00</div>
+        </div>
+        <div class="card">
+          <div class="metric-label">💰 Total de Despesas do Casal</div>
+          <div class="metric" id="mCasalTotal">R$ 0,00</div>
+        </div>
+      </div>
+
+      <!-- Gráfico de Comparação de Gastos do Casal -->
+      <div class="chart-box" style="margin-top:16px;max-width:560px;margin-left:auto;margin-right:auto">
+        <h3 style="text-align:center">Distribuição de Gastos: Tamir vs Tamires vs Família</h3>
+        <canvas id="chartCasal"></canvas>
+      </div>
+    </div>
+
+    <!-- Sincronização entre os Dois Celulares -->
+    <div class="section">
+      <h2>🔄 Sincronização de Dados entre os Aparelhos</h2>
+      <p class="note">Escolha a forma mais conveniente para você e sua esposa manterem os dois celulares com os mesmos lançamentos e saldos:</p>
+
+      <div class="two-col" style="margin-top:16px">
+        <!-- Método 1: Nuvem Automática (Supabase) -->
+        <div class="card" style="display:flex;flex-direction:column;justify-content:space-between">
+          <div>
+            <h3 style="margin-top:0">☁️ Sincronização Automática na Nuvem</h3>
+            <p style="font-size:0.88rem;color:var(--muted)">
+              Conecta ambos os celulares a um banco de dados gratuito (Supabase). Qualquer gasto lançado pelo marido ou pela esposa atualiza no celular do outro automaticamente!
+            </p>
+            <div style="margin:12px 0;padding:10px;background:var(--input-bg);border-radius:8px;border:1px solid var(--border)">
+              <div style="font-size:0.85rem">Status: <b id="casalCloudStatusText">🟢 Modo Local (Nuvem Disponível)</b></div>
+            </div>
+          </div>
+          <div class="actions" style="margin-top:10px">
+            <button type="button" class="primary" id="btnSyncCloudNow" style="width:100%">⚡ Sincronizar Agora com a Nuvem</button>
+            <button type="button" class="secondary small" id="btnOpenCloudConfig" style="width:100%;margin-top:6px">⚙️ Configurar Conexão da Nuvem</button>
+          </div>
+        </div>
+
+        <!-- Método 2: Compartilhamento Rápido via WhatsApp -->
+        <div class="card" style="display:flex;flex-direction:column;justify-content:space-between">
+          <div>
+            <h3 style="margin-top:0">💬 Compartilhar via WhatsApp (Sem Configuração)</h3>
+            <p style="font-size:0.88rem;color:var(--muted)">
+              Não quer criar conta na nuvem? Você pode enviar um resumo atualizado com 1 clique direto para o WhatsApp da sua esposa ou exportar os dados para ela importar no celular dela!
+            </p>
+            <div style="margin:12px 0;padding:10px;background:rgba(37,211,102,0.1);border-radius:8px;border:1px solid rgba(37,211,102,0.3)">
+              <span style="font-size:0.85rem;color:var(--text)">⚡ <b>100% Funcional e Grátis:</b> Gera arquivo ou texto para importação direta no celular dela.</span>
+            </div>
+          </div>
+          <div class="actions" style="margin-top:10px">
+            <button type="button" class="primary" id="btnShareWhatsApp" style="background:#25d366;border-color:#25d366;color:#fff;width:100%">
+              📲 Enviar Resumo no WhatsApp da Esposa
+            </button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
+              <button type="button" class="secondary small" id="btnExportWhatsAppJson">💾 Baixar Dados</button>
+              <button type="button" class="secondary small" id="btnImportWhatsAppJson">📥 Importar Dados</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Como Abrir no Celular -->
+    <div class="section">
+      <h2>📱 Como Abrir no Celular (Seu e da sua Esposa)</h2>
+
+      <div class="two-col" style="margin-top:16px">
+        <!-- Servidor Wi-Fi com QR Code -->
+        <div class="card">
+          <h3 style="margin-top:0">1. Pelo Wi-Fi de Casa (Servidor Local)</h3>
+          <p style="font-size:0.88rem;color:var(--muted)">
+            Dê 2 cliques no arquivo <b>"Abrir no Celular (Wi-Fi).bat"</b> na pasta do seu computador. Os celulares conectados no mesmo Wi-Fi abrirão na hora:
+          </p>
+          <div style="text-align:center;padding:14px;background:var(--input-bg);border-radius:8px;border:1px solid var(--border);margin:12px 0">
+            <div style="font-size:0.8rem;color:var(--muted);margin-bottom:6px">Aponte a câmera do celular da sua esposa:</div>
+            <img id="qrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=http://192.168.0.103:8080" alt="QR Code para Celular" style="border-radius:8px;max-width:180px;height:auto">
+            <div style="margin-top:8px;font-size:0.88rem">
+              Endereço: <a id="qrCodeLink" href="http://192.168.0.103:8080" target="_blank" style="color:var(--blue);font-weight:700">http://192.168.0.103:8080</a>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="customQrUrl" placeholder="Digitar outro link ou site" style="font-size:0.85rem">
+            <button type="button" class="secondary small" id="btnUpdateQrCode">Atualizar QR</button>
+          </div>
+        </div>
+
+        <!-- Hospedagem Gratuita na Web (Para usar no 4G na rua) -->
+        <div class="card">
+          <h3 style="margin-top:0">2. Na Web Grátis (Para usar na rua pelo 4G/5G)</h3>
+          <p style="font-size:0.88rem;color:var(--muted)">
+            Para acessar de qualquer lugar do mundo (no supermercado, posto, etc.):
+          </p>
+          <ol style="font-size:0.86rem;padding-left:18px;line-height:1.6;color:var(--text)">
+            <li>Abra o site gratuito: <a href="https://app.netlify.com/drop" target="_blank" style="color:var(--blue);font-weight:700">app.netlify.com/drop</a></li>
+            <li>Arraste a pasta <b>"Sistema controle financeiro"</b> para dentro da tela do site.</li>
+            <li>Em 20 segundos ele gera um link exclusivo (ex.: <i>https://financas-familia.netlify.app</i>).</li>
+            <li>Mande o link no WhatsApp da sua esposa e salvem nos favoritos!</li>
+          </ol>
+          <div style="padding:10px;background:rgba(38,117,104,0.1);border-radius:8px;font-size:0.82rem;margin-top:10px">
+            💡 <b>Dica:</b> Publique a nova versão no mesmo endereço. Os celulares conectados a este link verificam atualizações automaticamente e avisam quando há uma nova versão; toque em <b>“Atualizar app”</b> para carregá-la sem perder os dados salvos.
+          </div>
+        </div>
+      </div>
+
+      <!-- Como Instalar na Tela Inicial do Celular -->
+      <div class="card" style="margin-top:16px">
+        <h3 style="margin-top:0">⭐ Como Deixar Igual a um Aplicativo no Celular (Ícone na Tela Inicial)</h3>
+        <div class="two-col">
+          <div style="padding:12px;background:var(--input-bg);border-radius:8px;border:1px solid var(--border)">
+            <b>🍏 No iPhone (Safari):</b>
+            <ol style="font-size:0.85rem;padding-left:18px;margin:8px 0 0;line-height:1.5">
+              <li>Abra o link do sistema no Safari.</li>
+              <li>Toque no botão de <b>Compartilhar</b> (ícone do quadrado com a setinha para cima).</li>
+              <li>Role para baixo e selecione <b>"Adicionar à Tela de Início"</b>.</li>
+              <li>Pronto! O app ganha ícone próprio e abre em tela cheia como um app da Apple.</li>
+            </ol>
+          </div>
+          <div style="padding:12px;background:var(--input-bg);border-radius:8px;border:1px solid var(--border)">
+            <b>🤖 No Android (Google Chrome):</b>
+            <ol style="font-size:0.85rem;padding-left:18px;margin:8px 0 0;line-height:1.5">
+              <li>Abra o link do sistema no Chrome.</li>
+              <li>Toque nos <b>3 pontinhos</b> no canto superior direito.</li>
+              <li>Selecione <b>"Instalar aplicativo"</b> ou <b>"Adicionar à tela inicial"</b>.</li>
+              <li>Pronto! O app fica instalado ao lado do WhatsApp e do Nubank.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>Controle Financeiro Familiar · Todos os direitos reservados</footer>
+
+<!-- ========================================== -->
+<!-- BARRA DE NAVEGAÇÃO INFERIOR PARA CELULAR   -->
+<!-- ========================================== -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Navegação rápida celular">
+  <button type="button" class="mobile-nav-item active" data-tab="painel">
+    <span class="mobile-nav-icon">📊</span>
+    <span class="mobile-nav-label">Painel</span>
+  </button>
+  <button type="button" class="mobile-nav-item" data-tab="lancamentos">
+    <span class="mobile-nav-icon">💳</span>
+    <span class="mobile-nav-label">Extrato</span>
+  </button>
+  <button type="button" class="mobile-nav-item mobile-nav-center" id="mobileBtnNovo" title="Adicionar Novo Gasto">
+    <span class="mobile-nav-icon">➕</span>
+    <span class="mobile-nav-label">Novo</span>
+  </button>
+  <button type="button" class="mobile-nav-item" data-tab="acompanhamento">
+    <span class="mobile-nav-icon">🏷️</span>
+    <span class="mobile-nav-label">Produtos</span>
+  </button>
+  <button type="button" class="mobile-nav-item" data-tab="casal">
+    <span class="mobile-nav-icon">👥</span>
+    <span class="mobile-nav-label">Casal</span>
+  </button>
+</nav>
+
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: VISUALIZADOR DE COMPROVANTE         -->
+<!-- ========================================== -->
+<div class="modal-overlay" id="receiptModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="receiptModalTitle">Visualização de Comprovante</h3>
+      <button class="btn-close" id="closeReceiptModal" title="Fechar janela">✕</button>
+    </div>
+    <div id="receiptModalContent" style="text-align:center;padding:10px 0"></div>
+    <div class="actions" style="justify-content:flex-end">
+      <a id="downloadReceiptBtn" class="primary" download="comprovante" href="#">⬇️ Baixar Arquivo</a>
+      <button class="secondary" id="btnCloseReceiptModalAction">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: IMPORTADOR DE EXTRATO (OFX / CSV)   -->
+<!-- ========================================== -->
+<div class="modal-overlay" id="ofxModal">
+  <div class="modal-card" style="max-width:920px">
+    <div class="modal-head">
+      <h3>📥 Importar Extrato Bancário (Arquivos OFX ou CSV)</h3>
+      <button class="btn-close" id="closeOfxModal" title="Fechar janela">✕</button>
+    </div>
+    <p class="note">Carregue o arquivo exportado diretamente pelo aplicativo ou site do seu banco (como Nubank, Itaú, Bradesco, Banco do Brasil, Inter, Santander, Caixa). O sistema reconhece os valores e sugere categorias automaticamente.</p>
+    
+    <div style="margin:16px 0;padding:16px;background:var(--input-bg);border:2px dashed var(--border);border-radius:10px;text-align:center">
+      <input type="file" id="bankStatementFile" accept=".ofx,.csv" style="display:none">
+      <button type="button" class="primary" onclick="$('bankStatementFile').click()">📁 Selecionar Arquivo OFX ou CSV do Banco</button>
+      <div id="statementFileInfo" style="margin-top:8px;font-size:0.88rem;color:var(--blue)"></div>
+    </div>
+
+    <!-- Tabela de Pré-visualização de Itens Importados -->
+    <div id="statementPreviewArea" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+        <div>
+          <b>Lançamentos encontrados:</b> <span id="statementCount">0</span>
+          <span class="note" style="margin-left:10px">(Desmarque os lançamentos que não deseja incluir)</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="secondary small" id="selectAllStatement">Marcar Todos</button>
+          <button type="button" class="secondary small" id="deselectAllStatement">Desmarcar Todos</button>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="max-height:360px">
+        <table>
+          <thead>
+            <tr>
+              <th width="40"><input type="checkbox" id="checkStatementMaster" checked title="Selecionar ou desmarcar todos"></th>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Descrição do Banco</th>
+              <th>Valor</th>
+              <th>Categoria Sugerida</th>
+              <th>Conta / Banco</th>
+            </tr>
+          </thead>
+          <tbody id="statementTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="actions" style="margin-top:18px;justify-content:flex-end">
+        <button class="secondary" id="cancelImportStatement">Cancelar</button>
+        <button class="primary" id="confirmImportStatement">📥 Importar Lançamentos Selecionados</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: SEGURANÇA E SENHA DO PERFIL         -->
+<!-- ========================================== -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal-card" style="max-width:460px">
+    <div class="modal-head">
+      <h3>🔒 Senha e Segurança do Perfil</h3>
+      <button class="btn-close" id="closeProfileModal" title="Fechar janela">✕</button>
+    </div>
+    <form id="profileSecurityForm">
+      <div style="margin-bottom:14px">
+        <label>Nome do Perfil Atual</label>
+        <input type="text" id="editProfileName" required>
+      </div>
+      <div style="margin-bottom:14px">
+        <label>Nova Senha ou Código PIN (deixe em branco se não quiser senha)</label>
+        <div class="password-control">
+          <input type="password" id="newProfilePin" placeholder="Ex.: 1234 ou sua senha" autocomplete="new-password">
+          <button class="password-toggle" type="button" data-password-target="newProfilePin" aria-controls="newProfilePin" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+        </div>
+      </div>
+      <div class="actions" style="justify-content:flex-end">
+        <button type="button" class="secondary" id="cancelProfileModal">Cancelar</button>
+        <button type="submit" class="primary">Salvar Alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: IMPORTAR DADOS DO WHATSAPP          -->
+<!-- ========================================== -->
+<div class="modal-overlay" id="importWhatsAppModal">
+  <div class="modal-card" style="max-width:540px">
+    <div class="modal-head">
+      <h3>📥 Importar Dados do WhatsApp</h3>
+      <button class="btn-close" id="closeImportWhatsAppModal" title="Fechar janela">✕</button>
+    </div>
+    <p class="note">Cole aqui o texto ou selecione o arquivo JSON enviado pelo WhatsApp para sincronizar este celular com o do seu cônjuge na hora:</p>
+    <div style="margin:14px 0">
+      <label for="whatsAppInputText">Colar Conteúdo Recebido</label>
+      <textarea id="whatsAppInputText" rows="6" placeholder="Cole aqui o conteúdo recebido..." style="width:100%;font-family:monospace;font-size:0.8rem"></textarea>
+    </div>
+    <div style="margin:14px 0">
+      <label for="whatsAppInputFile">Ou escolher o arquivo .json recebido:</label>
+      <input type="file" id="whatsAppInputFile" accept=".json,application/json">
+    </div>
+    <div class="actions" style="justify-content:flex-end">
+      <button type="button" class="secondary" id="cancelImportWhatsAppModal">Cancelar</button>
+      <button type="button" class="primary" id="btnConfirmImportWhatsApp">Atualizar Tudo Agora</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- CÓDIGO JAVASCRIPT DO SISTEMA               -->
+<!-- ========================================== -->
+<script>
+(() => {
+'use strict';
+
+// ==========================================
+// DADOS DA PLANILHA OFICIAL (52 DESPESAS + 4 RECEITAS)
+// ==========================================
+const planilhaDespesas = [
+  ["Ninho (moto)","Transporte",214,1,"2026-11-15","Família"],
+  ["Botudog","Cachorros",69.45,1,"2026-11-15","Família"],
+  ["Carnieto","Transporte",315,3,"2026-11-15","Família"],
+  ["Pink (roupa)","Vestimentas",52.88,1,"2026-11-15","Família"],
+  ["Sofá (Claudia)","Moradia",130.64,2,"2026-11-15","Família"],
+  ["Rio Sul","Vestimentas",92,6,"2026-11-15","Família"],
+  ["Montreal (Copos)","Moradia",61.2,1,"2026-11-15","Família"],
+  ["Brinquedo Gah","Filho",49.99,3,"2026-11-15","Família"],
+  ["Portão","Moradia",355,10,"2026-11-15","Família"],
+  ["Eletti","Moradia",65,1,"2026-11-15","Família"],
+  ["Spotify","Extra",12.9,1,"2026-11-15","Família"],
+  ["Sutiã","Vestimentas",102.11,2,"2026-11-15","Família"],
+  ["agropec","Cachorros",147.9,1,"2026-11-15","Família"],
+  ["Central","Mercado",83.15,1,"2026-11-15","Família"],
+  ["Blablacar","Extra",19.9,12,"2026-11-15","Família"],
+  ["Carnietto","Carro",208.05,5,"2026-11-15","Família"],
+  ["Uber","Transporte",15.03,1,"2026-11-15","Família"],
+  ["Uber","Transporte",22.53,1,"2026-11-15","Família"],
+  ["Uber","Transporte",15.21,1,"2026-11-15","Família"],
+  ["Uber","Transporte",15.03,1,"2026-11-15","Família"],
+  ["Uber","Transporte",9,1,"2026-11-15","Família"],
+  ["Uber","Transporte",8.41,1,"2026-11-15","Família"],
+  ["Açougue","Mercado",141.09,1,"2026-11-15","Família"],
+  ["Farmacia","Farmácia",33.28,1,"2026-11-15","Família"],
+  ["mercado","Mercado",36.39,1,"2026-11-15","Família"],
+  ["Autozone","Carro",56.67,3,"2026-11-15","Família"],
+  ["Gasolina","Carro",100,1,"2026-11-15","Família"],
+  ["Netflix","Extra",20.9,3,"2026-11-15","Família"],
+  ["Lanche","Comida",33.9,1,"2026-11-15","Família"],
+  ["Lava e seca / havan","Casa",198.79,5,"2026-11-15","Família"],
+  ["Utensilios/Havan","Casa",29.99,4,"2026-11-15","Família"],
+  ["Figurinha /Havan","Casa",21,5,"2026-11-15","Família"],
+  ["produto/havan","Casa",17.61,4,"2026-11-15","Família"],
+  ["not / havan","Casa",162.56,7,"2026-11-15","Família"],
+  ["aspirador/havan","Casa",9.68,2,"2026-11-15","Família"],
+  ["lacaseca/havan","Casa",172.4,1,"2026-11-15","Família"],
+  ["microonddas/havan","Casa",69.99,5,"2026-11-15","Família"],
+  ["Sem parar","Carro",814.86,1,"2026-11-15","Família"],
+  ["Celular Fabiano","Celular",53.41,12,"2026-11-15","Fabiano"],
+  ["celular tamires","Celular",45.14,12,"2026-11-15","Tamires"],
+  ["Unimed / gabriel","Filho",315,12,"2026-11-15","Família"],
+  ["Maia","Extra",180,5,"2026-11-15","Família"],
+  ["Formatura","Extra",140,16,"2026-11-15","Família"],
+  ["casa","Moradia",630,231,"2026-11-15","Família"],
+  ["Carro/financiamento","Carro",1350,12,"2026-11-15","Família"],
+  ["emprestimo","Extra",740,2,"2026-11-15","Família"],
+  ["jualina Bauru","Lazer",200,2,"2026-11-15","Família"],
+  ["Agua","Casa",120,12,"2026-11-15","Família"],
+  ["Luz","Casa",270,12,"2026-11-15","Família"],
+  ["internet","Casa",100,12,"2026-11-15","Família"],
+  ["Faculdade","Estudo",410,13,"2026-11-15","Família"],
+  ["uber","Transporte",23.8,1,"2026-11-26","Família"]
+];
+
+const planilhaReceitas = [
+  ["adv salario","Salário",1200,"Fabiano"],
+  ["academia salario","Salário",6171.43,"Fabiano"],
+  ["hand / negociação","Renda extra",800,"Família"],
+  ["salario tamires","Salário",2072.73,"Tamires"]
+];
+
+function gerarLancamentosPlanilha() {
+  const lista = [];
+  let cont = 1;
+
+  planilhaDespesas.forEach(([desc, cat, valor, parcelas, dataStr, conta]) => {
+    const base = new Date(dataStr + 'T00:00:00');
+    for (let i = 0; i < parcelas; i++) {
+      const d = new Date(base.getFullYear(), base.getMonth() + i, 1);
+      const ano = d.getFullYear();
+      const mes = String(d.getMonth() + 1).padStart(2, '0');
+      const ultDia = new Date(ano, d.getMonth() + 1, 0).getDate();
+      const dia = String(Math.min(base.getDate(), ultDia)).padStart(2, '0');
+      const dt = `${ano}-${mes}-${dia}`;
+      
+      lista.push({
+        id: `plan_${cont++}`,
+        date: dt,
+        type: 'despesa',
+        description: desc,
+        amount: Number(valor),
+        category: cat,
+        status: 'pendente',
+        dueDate: dt,
+        account: conta || 'Família',
+        notes: parcelas > 1 ? `Parcela ${i + 1}/${parcelas}` : ''
+      });
+    }
+  });
+
+  // Receitas mensais para 14 meses (de 2026-11 até 2027-12)
+  for (let m = 0; m < 14; m++) {
+    const d = new Date(2026, 10 + m, 5);
+    const dt = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-05`;
+    planilhaReceitas.forEach(([desc, cat, valor, conta]) => {
+      lista.push({
+        id: `plan_${cont++}`,
+        date: dt,
+        type: 'receita',
+        description: desc,
+        amount: Number(valor),
+        category: cat,
+        status: 'pago',
+        dueDate: dt,
+        account: conta || 'Família',
+        notes: 'Receita mensal cadastrada'
+      });
+    });
+  }
+
+  return lista;
+}
+
+const CHAVE_SESSAO = 'app_active_profile_v2';
+const CHAVE_PERFIS = 'app_registered_profiles_v2';
+const PREFIXO_DADOS = 'controleFinanceiroUser_';
+const CONFIG_SUPABASE = 'finance_supabase_config_v1';
+const CHAVE_TEMA = 'finance_app_theme_v1';
+
+let currentUser = null;
+let currentReceiptData = null;
+let pendingStatementEntries = [];
+
+let chartCategory = null;
+let chartHistory = null;
+let chartBudget = null;
+let chartProduct = null;
+
+let cloudSyncQueue = Promise.resolve();
+let cloudSyncPending = 0;
+let cloudPollTimer = null;
+let lastCloudUpdatedAt = null;
+let hasUnsyncedChanges = false;
+let authSession = null;
+
+let state = { entries: [], budgets: {} };
+
+const $ = id => document.getElementById(id);
+const VERSAO_APP = document.querySelector('meta[name="app-version"]')?.content || '';
+const hoje = new Date();
+const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+const dataAtual = `${mesAtual}-${String(hoje.getDate()).padStart(2,'0')}`;
+
+function ocultarBadgeNetlify() {
+  document.querySelectorAll('[data-netlify-badge], .netlify-badge, #netlify-badge, iframe[src*="netlify"], div[class*="netlify"], div[id*="netlify"]').forEach(elemento => {
+    elemento.style.setProperty('display', 'none', 'important');
+  });
+
+  document.querySelectorAll('a[href*="netlify.com"]').forEach(link => {
+    let elemento = link;
+    while (elemento && elemento !== document.body) {
+      if (getComputedStyle(elemento).position === 'fixed') {
+        elemento.style.setProperty('display', 'none', 'important');
+        break;
+      }
+      elemento = elemento.parentElement;
+    }
+  });
+}
+
+ocultarBadgeNetlify();
+new MutationObserver(ocultarBadgeNetlify).observe(document.body, { childList: true, subtree: true });
+
+const formataMoeda = n => Number(n||0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const escapeHtml = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gerarId = () => `${Date.now()}_${Math.random().toString(36).slice(2,9)}`;
+
+function exibirAviso(mensagem) {
+  const container = $('toastContainer');
+  if (!container) return;
+  const item = document.createElement('div');
+  item.className = 'toast';
+  item.textContent = mensagem;
+  container.appendChild(item);
+  setTimeout(() => { item.style.opacity = '0'; setTimeout(() => item.remove(), 300); }, 3500);
+}
+
+const categorias = {
+  receita: ['Salário', 'Renda extra', 'Benefícios', 'Rendimentos', 'Reembolso', 'Outras receitas'],
+  despesa: ['Cachorros', 'Carro', 'Casa', 'Celular', 'Comida', 'Estudo', 'Extra', 'Farmácia', 'Filho', 'Lazer', 'Mercado', 'Moradia', 'Transporte', 'Vestimentas', 'Alimentação', 'Água e energia', 'Internet e telefone', 'Saúde', 'Educação', 'Assinaturas', 'Impostos e taxas', 'Dívidas e empréstimos', 'Pets', 'Outras despesas']
+};
+
+// ==========================================
+// TEMA ESCURO / CLARO
+// ==========================================
+function inicializarTema() {
+  const salvo = localStorage.getItem(CHAVE_TEMA) || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  aplicarTema(salvo);
+}
+
+function aplicarTema(tema) {
+  document.documentElement.setAttribute('data-theme', tema);
+  localStorage.setItem(CHAVE_TEMA, tema);
+  const escuro = tema === 'dark';
+  $('themeIcon').textContent = escuro ? '☀️' : '🌙';
+  $('themeText').textContent = escuro ? 'Modo Claro' : 'Modo Escuro';
+  if (chartCategory || chartHistory || chartBudget || chartProduct) {
+    renderizarTodosGraficos();
+  }
+}
+
+$('themeToggleBtn').addEventListener('click', () => {
+  const atual = document.documentElement.getAttribute('data-theme') || 'light';
+  aplicarTema(atual === 'dark' ? 'light' : 'dark');
+});
+
+$('btnUpdateApp').addEventListener('click', () => {
+  const botao = $('btnUpdateApp');
+  botao.disabled = true;
+  botao.textContent = '⏳ Atualizando...';
+  const urlAtualizada = new URL(window.location.href);
+  urlAtualizada.searchParams.set('_app_refresh', Date.now().toString());
+  window.location.replace(urlAtualizada.href);
+});
+
+let verificacaoAtualizacaoEmAndamento = false;
+let novaVersaoAppDisponivel = false;
+
+async function verificarAtualizacaoApp() {
+  const status = $('appUpdateStatus');
+  if (!status || !VERSAO_APP) return;
+  if (!['http:', 'https:'].includes(window.location.protocol)) {
+    status.textContent = 'Publique o app em um link HTTPS para verificar atualizações.';
+    return;
+  }
+  if (document.hidden || verificacaoAtualizacaoEmAndamento) return;
+
+  verificacaoAtualizacaoEmAndamento = true;
+  try {
+    const urlVerificacao = new URL(window.location.href);
+    urlVerificacao.hash = '';
+    urlVerificacao.searchParams.delete('_app_refresh');
+    urlVerificacao.searchParams.set('_app_check', Date.now().toString());
+    const resposta = await fetch(urlVerificacao.href, { cache: 'no-store' });
+    if (!resposta.ok) throw new Error(`O servidor respondeu com erro ${resposta.status}.`);
+
+    const htmlPublicada = await resposta.text();
+    const documentoPublicado = new DOMParser().parseFromString(htmlPublicada, 'text/html');
+    const versaoPublicada = documentoPublicado.querySelector('meta[name="app-version"]')?.content;
+    if (!versaoPublicada) throw new Error('A versão publicada não informa o identificador de atualização.');
+
+    const novaVersaoAppDisponivel = versaoPublicada !== VERSAO_APP;
+    status.textContent = novaVersaoAppDisponivel
+      ? '✨ Nova versão disponível — toque em Atualizar app.'
+      : `✅ App atualizado (${VERSAO_APP}).`;
+    status.title = novaVersaoAppDisponivel ? `Versão atual: ${VERSAO_APP}; publicada: ${versaoPublicada}` : '';
+    $('btnUpdateApp').textContent = novaVersaoAppDisponivel ? '⬆️ Atualizar agora' : '🔄 Atualizar app';
+    $('btnUpdateApp').classList.toggle('primary', novaVersaoAppDisponivel);
+    $('btnUpdateApp').classList.toggle('secondary', !novaVersaoAppDisponivel);
+  } catch (erro) {
+    status.textContent = '⚠️ Não foi possível verificar atualizações.';
+    status.title = erro.message;
+    console.warn('Falha ao verificar atualizações do app:', erro);
+  } finally {
+    verificacaoAtualizacaoEmAndamento = false;
+  }
+}
+
+verificarAtualizacaoApp();
+window.setInterval(verificarAtualizacaoApp, 180000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) verificarAtualizacaoApp();
+});
+
+// ==========================================
+// SINCRONIZAÇÃO EM NUVEM (SUPABASE - OPCIONAL)
+// ==========================================
+function obterConfigSupabase() {
+  try { return JSON.parse(localStorage.getItem(CONFIG_SUPABASE)||'null'); } catch { return null; }
+}
+
+async function requisicaoSupabase(caminho, { metodo='GET', corpo, tokenAcesso, cabecalhos: extras={} } = {}) {
+  const config = obterConfigSupabase();
+  if (!config?.url || !config?.publicKey) throw new Error('Conexão na nuvem não configurada.');
+  const cabecalhos = { apikey: config.publicKey, Authorization: `Bearer ${tokenAcesso||config.publicKey}`, ...extras };
+  if (corpo !== undefined) cabecalhos['Content-Type'] = 'application/json';
+  const resposta = await fetch(`${config.url}${caminho}`, { method: metodo, headers: cabecalhos, body: corpo === undefined ? undefined : JSON.stringify(corpo) });
+  const texto = await resposta.text();
+  let resultado = null;
+  try { resultado = texto ? JSON.parse(texto) : null; } catch { resultado = { message: texto }; }
+  if (!resposta.ok) throw new Error(resultado?.msg || resultado?.message || resultado?.error_description || resultado?.error || `Erro de conexão (${resposta.status})`);
+  return resultado;
+}
+
+$('saveSupabaseConfig').addEventListener('click', () => {
+  const url = $('supabaseUrl').value.trim().replace(/\/+$/, '');
+  const publicKey = $('supabasePublicKey').value.trim();
+  try {
+    if (!url || !publicKey) throw new Error('Preencha a URL e a Chave pública.');
+    new URL(url);
+    localStorage.setItem(CONFIG_SUPABASE, JSON.stringify({ url, publicKey }));
+    $('supabaseConfigStatus').textContent = 'Conexão salva com sucesso!';
+    exibirAviso('Configuração da nuvem salva!');
+  } catch (erro) {
+    $('supabaseConfigStatus').textContent = erro.message;
+  }
+});
+
+// ==========================================
+// ACESSO AO SISTEMA E GERENCIADOR DE PERFIS
+// ==========================================
+function obterPerfisSalvos() {
+  try { return JSON.parse(localStorage.getItem(CHAVE_PERFIS) || '{}'); } catch { return {}; }
+}
+
+function salvarListaPerfis(lista) {
+  localStorage.setItem(CHAVE_PERFIS, JSON.stringify(lista));
+}
+
+function atualizarPerfisRecentesUI() {
+  const perfis = obterPerfisSalvos();
+  const chaves = Object.keys(perfis);
+  const container = $('recentProfilesBox');
+  const lista = $('recentProfilesList');
+  if (!chaves.length) { container.style.display = 'none'; return; }
+  
+  container.style.display = 'block';
+  lista.innerHTML = chaves.map(k => `<button type="button" class="secondary small btn-quick-profile" data-profile="${escapeHtml(k)}">${escapeHtml(k)}</button>`).join('');
+  lista.querySelectorAll('.btn-quick-profile').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('localUserName').value = btn.dataset.profile;
+      $('localUserPin').value = '';
+      $('localUserPin').focus();
+    });
+  });
+}
+
+$('authScreen').addEventListener('click', e => {
+  const botao = e.target.closest('.password-toggle[data-password-target]');
+  if (!botao) return;
+  const campo = $(botao.dataset.passwordTarget);
+  if (!campo) return;
+  const oculto = campo.type === 'password';
+  campo.type = oculto ? 'text' : 'password';
+  botao.textContent = oculto ? 'Ocultar' : 'Mostrar';
+  botao.setAttribute('aria-label', oculto ? 'Ocultar senha' : 'Mostrar senha');
+  botao.setAttribute('aria-pressed', String(oculto));
+});
+
+$('profileModal').addEventListener('click', e => {
+  const botao = e.target.closest('.password-toggle[data-password-target]');
+  if (!botao) return;
+  const campo = $(botao.dataset.passwordTarget);
+  if (!campo) return;
+  const oculto = campo.type === 'password';
+  campo.type = oculto ? 'text' : 'password';
+  botao.textContent = oculto ? 'Ocultar' : 'Mostrar';
+  botao.setAttribute('aria-label', oculto ? 'Ocultar senha' : 'Mostrar senha');
+  botao.setAttribute('aria-pressed', String(oculto));
+});
+
+$('quickLoginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  $('loginAlert').style.display = 'none';
+  const nome = $('localUserName').value.trim();
+  const pin = $('localUserPin').value.trim();
+  const lembrar = $('rememberMe').checked;
+
+  if (!nome) {
+    $('loginAlert').textContent = 'Por favor, informe seu nome ou o perfil desejado.';
+    $('loginAlert').style.display = 'block';
+    return;
+  }
+
+  const perfis = obterPerfisSalvos();
+  const chavePerfil = nome.toLowerCase();
+
+  if (perfis[chavePerfil] && perfis[chavePerfil].pin) {
+    if (perfis[chavePerfil].pin !== pin) {
+      $('loginAlert').textContent = 'Senha incorreta para este perfil.';
+      $('loginAlert').style.display = 'block';
+      return;
+    }
+  } else {
+    perfis[chavePerfil] = {
+      name: nome,
+      pin: pin || '',
+      updatedAt: new Date().toISOString()
+    };
+    salvarListaPerfis(perfis);
+  }
+
+  currentUser = {
+    id: 'local_' + chavePerfil.replace(/[^a-z0-9]/g, '_'),
+    name: perfis[chavePerfil]?.name || nome,
+    email: `${chavePerfil}@local.financas`,
+    isCloud: false
+  };
+
+  if (lembrar) {
+    localStorage.setItem(CHAVE_SESSAO, JSON.stringify(currentUser));
+  } else {
+    sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify(currentUser));
+  }
+
+  iniciarSistema();
+});
+
+$('cloudLoginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = $('cloudEmail').value.trim();
+  const senha = $('cloudPassword').value;
+  $('loginAlert').style.display = 'none';
+  if (!email || !senha) {
+    $('loginAlert').textContent = 'Informe o e-mail e a senha cadastrados na nuvem.';
+    $('loginAlert').style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await requisicaoSupabase('/auth/v1/token?grant_type=password', { metodo: 'POST', corpo: { email, password: senha } });
+    if (!res?.access_token || !res?.user?.id) {
+      throw new Error('A nuvem não retornou uma sessão válida. Verifique a confirmação do e-mail e tente novamente.');
+    }
+
+    const emailUsuario = res.user.email || email;
+    authSession = res;
+    currentUser = {
+      id: res.user.id,
+      name: res.user.user_metadata?.full_name || emailUsuario.split('@')[0],
+      email: emailUsuario,
+      isCloud: true
+    };
+    localStorage.setItem(CHAVE_SESSAO, JSON.stringify(currentUser));
+    iniciarSistema();
+  } catch (err) {
+    $('loginAlert').textContent = 'Erro ao entrar pela nuvem: ' + err.message;
+    $('loginAlert').style.display = 'block';
+  }
+});
+
+$('btnCloudRegister').addEventListener('click', async () => {
+  const email = $('cloudEmail').value.trim();
+  const senha = $('cloudPassword').value;
+  if (!email || !senha || senha.length < 6) { alert('Informe um e-mail válido e uma senha de no mínimo 6 caracteres.'); return; }
+  try {
+    await requisicaoSupabase('/auth/v1/signup', { metodo: 'POST', corpo: { email, password: senha } });
+    alert('Conta criada na nuvem com sucesso! Se a confirmação por e-mail estiver ativa, confira sua caixa de entrada.');
+  } catch (err) {
+    alert('Erro no cadastro da nuvem: ' + err.message);
+  }
+});
+
+$('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem(CHAVE_SESSAO);
+  sessionStorage.removeItem(CHAVE_SESSAO);
+  currentUser = null;
+  authSession = null;
+  if (cloudPollTimer) { clearInterval(cloudPollTimer); cloudPollTimer = null; }
+  $('appScreen').classList.add('hidden');
+  $('authScreen').classList.remove('hidden');
+  atualizarPerfisRecentesUI();
+});
+
+$('profileSettingsBtn').addEventListener('click', () => {
+  if (!currentUser) return;
+  $('editProfileName').value = currentUser.name || '';
+  $('newProfilePin').value = '';
+  $('profileModal').classList.add('active');
+});
+
+$('closeProfileModal').addEventListener('click', () => $('profileModal').classList.remove('active'));
+$('cancelProfileModal').addEventListener('click', () => $('profileModal').classList.remove('active'));
+
+$('profileSecurityForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const novoNome = $('editProfileName').value.trim();
+  const novoPin = $('newProfilePin').value.trim();
+  if (!novoNome) return;
+
+  const perfis = obterPerfisSalvos();
+  const chaveAntiga = (currentUser.name || '').toLowerCase();
+  
+  if (perfis[chaveAntiga]) delete perfis[chaveAntiga];
+  
+  const novaChave = novoNome.toLowerCase();
+  perfis[novaChave] = {
+    name: novoNome,
+    pin: novoPin,
+    updatedAt: new Date().toISOString()
+  };
+  salvarListaPerfis(perfis);
+
+  currentUser.name = novoNome;
+  $('loggedUserName').textContent = novoNome;
+  localStorage.setItem(CHAVE_SESSAO, JSON.stringify(currentUser));
+  
+  $('profileModal').classList.remove('active');
+  exibirAviso('Perfil e senha atualizados com sucesso!');
+});
+
+// ==========================================
+// INÍCIO DO SISTEMA E PERSISTÊNCIA
+// ==========================================
+async function iniciarSistema() {
+  $('authScreen').classList.add('hidden');
+  $('appScreen').classList.remove('hidden');
+  $('loggedUserName').textContent = currentUser.name || 'Família';
+  definirStatusConexao(currentUser.isCloud ? '☁️ Nuvem Ativa' : '🟢 Modo Local');
+
+  carregarDadosUsuario();
+
+  // Mês padrão: 2026-11 (mês de referência dos lançamentos da planilha)
+  const mesPadrao = state.entries.some(e => e.date?.startsWith('2026-11')) ? '2026-11' : (state.entries.map(e => e.date?.slice(0,7)).filter(m => m && m >= mesAtual).sort()[0] || mesAtual);
+  ['dashMonth', 'filterMonth', 'budgetMonth', 'reportMonth'].forEach(id => {
+    if ($(id)) $(id).value = mesPadrao;
+  });
+  $('date').value = dataAtual;
+
+  renderizarTudo();
+  exibirAviso(`Seja bem-vindo, ${currentUser.name}!`);
+}
+
+function definirStatusConexao(texto) {
+  const el = $('syncStatus');
+  if (el) el.textContent = texto;
+}
+
+function carregarDadosUsuario() {
+  const chaveLocal = `${PREFIXO_DADOS}${currentUser.id}`;
+  try {
+    const bruto = localStorage.getItem(chaveLocal);
+    if (bruto) {
+      const analisado = JSON.parse(bruto);
+      if (Array.isArray(analisado.entries) && analisado.entries.length > 0) {
+        state = {
+          entries: analisado.entries,
+          budgets: (analisado.budgets && typeof analisado.budgets === 'object') ? analisado.budgets : {}
+        };
+        return;
+      }
+    }
+  } catch (e) {
+    console.error('Erro ao ler os dados locais:', e);
+  }
+  
+  // Se ainda não houver lançamentos gravados neste dispositivo, carrega automaticamente todos os 512 lançamentos da planilha!
+  state = {
+    entries: gerarLancamentosPlanilha(),
+    budgets: {}
+  };
+  persistirDados();
+}
+
+function persistirDados() {
+  if (currentUser?.id) {
+    localStorage.setItem(`${PREFIXO_DADOS}${currentUser.id}`, JSON.stringify(state));
+  }
+  renderizarTudo();
+  
+  if (currentUser?.isCloud && authSession?.access_token) {
+    definirStatusConexao('Salvando na nuvem...');
+    cloudSyncQueue = cloudSyncQueue.then(async () => {
+      try {
+        await requisicaoSupabase('/rest/v1/finance_data?on_conflict=user_id', {
+          metodo: 'POST',
+          tokenAcesso: authSession.access_token,
+          cabecalhos: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+          corpo: { user_id: currentUser.id, data: state, updated_at: new Date().toISOString() }
+        });
+        definirStatusConexao('☁️ Sincronizado');
+      } catch (err) {
+        definirStatusConexao('Falha ao sincronizar na nuvem');
+      }
+    });
+  }
+}
+
+function preencherSelecao(id, itens, rotuloInicial) {
+  const el = $(id);
+  if (!el) return;
+  const anterior = el.value;
+  el.innerHTML = (rotuloInicial !== undefined ? `<option value="">${escapeHtml(rotuloInicial)}</option>` : '') +
+    itens.map(x => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join('');
+  if ([...el.options].some(o => o.value === anterior)) el.value = anterior;
+}
+
+function atualizarSelecoesCategorias() {
+  const categoriasDespesas = [...new Set([...categorias.despesa, ...state.entries.filter(e => e.type === 'despesa').map(e => e.category).filter(Boolean)])].sort((a,b) => a.localeCompare(b,'pt-BR'));
+  const categoriasReceitas = [...new Set([...categorias.receita, ...state.entries.filter(e => e.type === 'receita').map(e => e.category).filter(Boolean)])].sort((a,b) => a.localeCompare(b,'pt-BR'));
+
+  preencherSelecao('category', [...categoriasDespesas, ...categoriasReceitas]);
+  preencherSelecao('filterCategory', [...categoriasDespesas, ...categoriasReceitas], 'Todas as categorias');
+  preencherSelecao('budgetCategory', categoriasDespesas);
+
+  const contas = [...new Set(state.entries.map(e => e.account).filter(Boolean))].sort((a,b) => a.localeCompare(b,'pt-BR'));
+  preencherSelecao('dashAccount', contas, 'Todos os responsáveis');
+
+  const produtos = [...new Set(state.entries.map(e => e.description).filter(Boolean))].sort((a,b) => a.localeCompare(b,'pt-BR'));
+  preencherSelecao('trackProduct', produtos);
+}
+
+function lancamentosDoMes(mes) {
+  return state.entries.filter(e => !mes || e.date?.startsWith(mes));
+}
+
+function totalPorTipo(lista, tipo, situacao) {
+  return lista.filter(e => (!tipo || e.type === tipo) && (!situacao || e.status === situacao))
+              .reduce((s, e) => s + Number(e.amount || 0), 0);
+}
+
+function rotuloMes(m) {
+  if (!m) return 'Todos os meses';
+  const [ano, mes] = m.split('-');
+  return `${mes}/${ano}`;
+}
+
+function definirTexto(id, texto) {
+  const el = $(id);
+  if (el) el.textContent = texto;
+}
+
+// ==========================================
+// RENDERIZAÇÃO DO PAINEL GERAL
+// ==========================================
+function renderizarPainel() {
+  const mes = $('dashMonth').value || '2026-11';
+  const conta = $('dashAccount').value;
+  const lista = lancamentosDoMes(mes).filter(e => !conta || e.account === conta);
+
+  const recebido = totalPorTipo(lista, 'receita', 'pago');
+  const pago = totalPorTipo(lista, 'despesa', 'pago');
+  const aberto = totalPorTipo(lista, 'despesa', 'pendente');
+
+  definirTexto('mIncome', formataMoeda(recebido));
+  definirTexto('mExpense', formataMoeda(pago));
+  definirTexto('mBalance', formataMoeda(recebido - pago));
+  definirTexto('mOpen', formataMoeda(aberto));
+
+  if ($('mBalance')) $('mBalance').className = 'metric ' + (recebido - pago >= 0 ? 'green' : 'red');
+
+  const previstoReceitas = totalPorTipo(lista, 'receita', null);
+  const previstoDespesas = totalPorTipo(lista, 'despesa', null);
+  definirTexto('planIncome', formataMoeda(previstoReceitas));
+  definirTexto('planExpense', formataMoeda(previstoDespesas));
+  
+  const saldoPrevistoEl = $('planBalance');
+  if (saldoPrevistoEl) {
+    saldoPrevistoEl.textContent = formataMoeda(previstoReceitas - previstoDespesas);
+    saldoPrevistoEl.className = previstoReceitas - previstoDespesas >= 0 ? 'green' : 'red';
+  }
+  definirTexto('projectionNote', `${rotuloMes(mes)} · Total planejado: ${formataMoeda(previstoReceitas)} (Receitas) - ${formataMoeda(previstoDespesas)} (Despesas).`);
+
+  const totaisCategorias = {};
+  lista.filter(e => e.type === 'despesa').forEach(e => {
+    totaisCategorias[e.category] = (totaisCategorias[e.category] || 0) + Number(e.amount || 0);
+  });
+  const ordenado = Object.entries(totaisCategorias).sort((a,b) => b[1] - a[1]);
+  if ($('categorySummary')) {
+    $('categorySummary').innerHTML = ordenado.length ? ordenado.map(([c, v]) => `
+      <div style="margin:10px 0">
+        <div style="display:flex;justify-content:space-between;gap:8px">
+          <span>${escapeHtml(c)}</span><b>${formataMoeda(v)}</b>
+        </div>
+        <progress max="${Math.max(...ordenado.map(x=>x[1]), 1)}" value="${v}"></progress>
+      </div>
+    `).join('') : 'Nenhuma despesa registrada para este mês.';
+  }
+
+  const pendentes = state.entries.filter(e => e.status === 'pendente' && e.dueDate)
+                                 .sort((a,b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 8);
+  if ($('upcoming')) {
+    $('upcoming').innerHTML = pendentes.length ? pendentes.map(e => `
+      <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <b>${escapeHtml(e.description)}</b> ${e.notes ? `<span class="note">(${escapeHtml(e.notes)})</span>` : ''}<br>
+        <span>${escapeHtml(e.dueDate.split('-').reverse().join('/'))} · ${escapeHtml(e.category)} (${escapeHtml(e.account||'Família')})</span><br>
+        <span class="${e.type === 'receita' ? 'green' : 'red'}">${e.type === 'receita' ? 'A receber' : 'A pagar'}: ${formataMoeda(e.amount)}</span>
+      </div>
+    `).join('') : 'Nenhuma conta pendente com vencimento informado.';
+  }
+
+  renderizarGraficosPainel(lista);
+}
+
+function obterCoresTemaGrafico() {
+  const escuro = document.documentElement.getAttribute('data-theme') === 'dark';
+  return {
+    corTexto: escuro ? '#e2e8f0' : '#263432',
+    corGrade: escuro ? '#2d3e3b' : '#e8edf3',
+    paleta: [
+      '#267568', '#38b2ac', '#e28743', '#eab308', '#ec4899',
+      '#8b5cf6', '#3b82f6', '#10b981', '#f97316', '#6366f1',
+      '#14b8a6', '#06b6d4', '#84cc16', '#f43f5e', '#a855f7'
+    ]
+  };
+}
+
+function renderizarGraficosPainel(lancamentosDoPeriodo) {
+  if (typeof Chart === 'undefined') return;
+  const cores = obterCoresTemaGrafico();
+
+  // Gráfico de Rosca: Gastos por Categoria
+  const totaisCategorias = {};
+  lancamentosDoPeriodo.filter(e => e.type === 'despesa').forEach(e => {
+    totaisCategorias[e.category] = (totaisCategorias[e.category] || 0) + Number(e.amount || 0);
+  });
+  const rotulos = Object.keys(totaisCategorias);
+  const valores = Object.values(totaisCategorias);
+
+  const ctxRosca = $('chartExpensesCategory')?.getContext('2d');
+  if (ctxRosca) {
+    if (chartCategory) chartCategory.destroy();
+    chartCategory = new Chart(ctxRosca, {
+      type: 'doughnut',
+      data: {
+        labels: rotulos.length ? rotulos : ['Sem despesas neste mês'],
+        datasets: [{
+          data: valores.length ? valores : [1],
+          backgroundColor: valores.length ? cores.paleta.slice(0, rotulos.length) : ['#cbd5e1'],
+          borderWidth: 2,
+          borderColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1b2624' : '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: cores.corTexto, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: item => ` ${item.label}: ${formataMoeda(item.raw)}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Gráfico de Barras: Histórico Receitas vs Despesas (6 meses a partir de Nov/2026)
+  const mesesHistorico = ['2026-11', '2026-12', '2027-01', '2027-02', '2027-03', '2027-04'];
+  const dadosReceitas = mesesHistorico.map(m => totalPorTipo(lancamentosDoMes(m), 'receita', null));
+  const dadosDespesas = mesesHistorico.map(m => totalPorTipo(lancamentosDoMes(m), 'despesa', null));
+
+  const ctxBarras = $('chartIncomeVsExpense')?.getContext('2d');
+  if (ctxBarras) {
+    if (chartHistory) chartHistory.destroy();
+    chartHistory = new Chart(ctxBarras, {
+      type: 'bar',
+      data: {
+        labels: mesesHistorico.map(rotuloMes),
+        datasets: [
+          { label: 'Receitas Previstas', data: dadosReceitas, backgroundColor: '#197a59', borderRadius: 6 },
+          { label: 'Despesas Previstas', data: dadosDespesas, backgroundColor: '#b94a48', borderRadius: 6 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: cores.corTexto }, grid: { display: false } },
+          y: {
+            ticks: { color: cores.corTexto, callback: v => 'R$ ' + v },
+            grid: { color: cores.corGrade }
+          }
+        },
+        plugins: {
+          legend: { position: 'top', labels: { color: cores.corTexto } },
+          tooltip: {
+            callbacks: {
+              label: item => ` ${item.dataset.label}: ${formataMoeda(item.raw)}`
+            }
+          }
+        }
+      }
+    });
+  }
+}
+
+function renderizarGraficoOrcamento() {
+  if (typeof Chart === 'undefined') return;
+  const mes = $('budgetMonth').value || '2026-11';
+  const cores = obterCoresTemaGrafico();
+  
+  const rotulos = [];
+  const limites = [];
+  const gastos = [];
+
+  categorias.despesa.forEach(cat => {
+    const chave = `${mes}|${cat}`;
+    const limite = Number(state.budgets[chave] || 0);
+    const gasto = lancamentosDoMes(mes).filter(e => e.type === 'despesa' && e.category === cat)
+                                       .reduce((s, e) => s + Number(e.amount || 0), 0);
+    if (limite > 0 || gasto > 0) {
+      rotulos.push(cat);
+      limites.push(limite);
+      gastos.push(gasto);
+    }
+  });
+
+  const ctx = $('chartBudgetComparison')?.getContext('2d');
+  if (!ctx) return;
+  if (chartBudget) chartBudget.destroy();
+
+  chartBudget = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: rotulos.length ? rotulos : ['Nenhum limite cadastrado'],
+      datasets: [
+        { label: 'Limite Definido', data: limites, backgroundColor: '#267568', borderRadius: 4 },
+        { label: 'Gasto Previsto', data: gastos, backgroundColor: '#b94a48', borderRadius: 4 }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { ticks: { color: cores.corTexto, callback: v => 'R$ ' + v }, grid: { color: cores.corGrade } },
+        y: { ticks: { color: cores.corTexto }, grid: { display: false } }
+      },
+      plugins: {
+        legend: { labels: { color: cores.corTexto } },
+        tooltip: { callbacks: { label: item => ` ${item.dataset.label}: ${formataMoeda(item.raw)}` } }
+      }
+    }
+  });
+}
+
+function renderizarGraficoProduto(produto) {
+  if (typeof Chart === 'undefined') return;
+  const ctx = $('chartProductHistory')?.getContext('2d');
+  if (!ctx) return;
+  const cores = obterCoresTemaGrafico();
+
+  if (!produto) {
+    if (chartProduct) chartProduct.destroy();
+    return;
+  }
+
+  const registros = state.entries.filter(e => (e.description||'').toLowerCase() === produto.toLowerCase());
+  const dadosMensais = {};
+  registros.forEach(e => {
+    const m = e.date ? e.date.slice(0,7) : 'Outros';
+    dadosMensais[m] = (dadosMensais[m] || 0) + Number(e.amount || 0);
+  });
+
+  const mesesOrdenados = Object.keys(dadosMensais).sort();
+  const valores = mesesOrdenados.map(m => dadosMensais[m]);
+
+  if (chartProduct) chartProduct.destroy();
+  chartProduct = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: mesesOrdenados.map(rotuloMes),
+      datasets: [{
+        label: `Evolução de: ${produto}`,
+        data: valores,
+        borderColor: '#267568',
+        backgroundColor: 'rgba(38, 117, 104, 0.15)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: '#267568'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { ticks: { color: cores.corTexto }, grid: { display: false } },
+        y: { ticks: { color: cores.corTexto, callback: v => 'R$ ' + v }, grid: { color: cores.corGrade } }
+      },
+      plugins: {
+        legend: { labels: { color: cores.corTexto } },
+        tooltip: { callbacks: { label: item => ` Total gasto: ${formataMoeda(item.raw)}` } }
+      }
+    }
+  });
+}
+
+function renderizarTodosGraficos() {
+  const mes = $('dashMonth').value || '2026-11';
+  renderizarGraficosPainel(lancamentosDoMes(mes));
+  renderizarGraficoOrcamento();
+  renderizarGraficoProduto($('trackProduct')?.value);
+  renderizarPainelCasal();
+}
+
+// ==========================================
+// RENDERIZAÇÃO DA TABELA DE LANÇAMENTOS
+// ==========================================
+function lancamentosFiltrados() {
+  const m = $('filterMonth').value;
+  const t = $('filterType').value;
+  const s = $('filterStatus').value;
+  const c = $('filterCategory').value;
+  const busca = $('filterSearch').value.trim().toLocaleLowerCase('pt-BR');
+
+  return state.entries.filter(e =>
+    (!m || e.date?.startsWith(m)) &&
+    (!t || e.type === t) &&
+    (!s || e.status === s) &&
+    (!c || e.category === c) &&
+    (!busca || `${e.description} ${e.notes||''} ${e.account||''}`.toLocaleLowerCase('pt-BR').includes(busca))
+  ).sort((a,b) => b.date.localeCompare(a.date));
+}
+
+function renderizarLancamentos() {
+  const lista = lancamentosFiltrados();
+  const corpoTabela = $('entriesBody');
+  const listaMobile = $('entriesMobileList');
+  if (!corpoTabela) return;
+
+  corpoTabela.innerHTML = lista.length ? lista.map(e => `
+    <tr>
+      <td>${escapeHtml(e.date?.split('-').reverse().join('/') || '')}</td>
+      <td><span class="pill ${e.type === 'receita' ? 'in' : 'out'}">${e.type === 'receita' ? 'Crédito' : 'Débito'}</span></td>
+      <td class="desc">
+        <b>${escapeHtml(e.description)}</b>
+        ${e.notes ? `<br><span class="note">${escapeHtml(e.notes)}</span>` : ''}
+        ${e.dueDate ? `<br><span class="note">Vence: ${escapeHtml(e.dueDate.split('-').reverse().join('/'))}</span>` : ''}
+      </td>
+      <td>${escapeHtml(e.category)}</td>
+      <td>${escapeHtml(e.account || '—')}</td>
+      <td class="${e.type === 'receita' ? 'green' : 'red'}" style="font-weight:700">${formataMoeda(e.amount)}</td>
+      <td>
+        <button type="button" class="pill ${e.status === 'pago' ? 'in' : 'out'}" data-toggle-status="${escapeHtml(e.id)}" style="cursor:pointer;border:0" title="Clique para alternar entre Pago e Pendente">
+          ${e.status === 'pago' ? '✓ Pago' : '⏳ Pendente'}
+        </button>
+      </td>
+      <td>
+        ${e.receipt ? `<button type="button" class="pill receipt small" data-view-receipt="${escapeHtml(e.id)}">📎 Ver</button>` : '—'}
+      </td>
+      <td>
+        <button class="secondary small" data-edit="${escapeHtml(e.id)}">Editar</button>
+        <button class="danger small" data-delete="${escapeHtml(e.id)}">Excluir</button>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="9" class="empty">Nenhum lançamento encontrado para os filtros selecionados.</td></tr>`;
+
+  if (listaMobile) {
+    listaMobile.innerHTML = lista.length ? lista.map(e => `
+      <div class="entry-mobile-card">
+        <div class="entry-card-header">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <span class="pill ${e.type === 'receita' ? 'in' : 'out'}">${e.type === 'receita' ? 'Crédito' : 'Débito'}</span>
+            <span class="pill" style="background:rgba(0,0,0,0.06);font-size:0.75rem">${escapeHtml(e.category)}</span>
+            ${e.account ? `<span class="pill" style="border:1px solid var(--border);font-size:0.75rem">👤 ${escapeHtml(e.account)}</span>` : ''}
+          </div>
+          <div class="entry-card-amount ${e.type === 'receita' ? 'green' : 'red'}">
+            ${e.type === 'receita' ? '+' : '-'} ${formataMoeda(e.amount)}
+          </div>
+        </div>
+        <div class="entry-card-body">
+          <div class="entry-card-title">${escapeHtml(e.description)}</div>
+          ${e.notes ? `<div class="entry-card-notes">${escapeHtml(e.notes)}</div>` : ''}
+          <div class="entry-card-date">
+            📅 ${escapeHtml(e.date?.split('-').reverse().join('/') || '')}
+            ${e.dueDate ? ` · <b>Vencimento:</b> ${escapeHtml(e.dueDate.split('-').reverse().join('/'))}` : ''}
+          </div>
+        </div>
+        <div class="entry-card-footer">
+          <button type="button" class="pill ${e.status === 'pago' ? 'in' : 'out'}" data-toggle-status="${escapeHtml(e.id)}" style="cursor:pointer;border:0;padding:6px 12px;font-size:0.85rem">
+            ${e.status === 'pago' ? '✓ Pago' : '⏳ Pendente'}
+          </button>
+          <div style="display:flex;gap:6px">
+            ${e.receipt ? `<button type="button" class="pill receipt small" data-view-receipt="${escapeHtml(e.id)}">📎 Ver</button>` : ''}
+            <button type="button" class="secondary small" data-edit="${escapeHtml(e.id)}" style="padding:4px 8px">✏️</button>
+            <button type="button" class="danger small" data-delete="${escapeHtml(e.id)}" style="padding:4px 8px">🗑️</button>
+          </div>
+        </div>
+      </div>
+    `).join('') : `<div class="card empty" style="text-align:center;padding:24px">Nenhum lançamento encontrado para os filtros selecionados.</div>`;
+  }
+
+  definirTexto('entryCount', `${lista.length} lançamento(s) exibidos · Receitas: ${formataMoeda(totalPorTipo(lista,'receita',null))} · Despesas: ${formataMoeda(totalPorTipo(lista,'despesa',null))}`);
+
+  document.querySelectorAll('[data-toggle-status]').forEach(b => {
+    b.addEventListener('click', () => {
+      const id = b.dataset.toggleStatus;
+      const e = state.entries.find(x => x.id === id);
+      if (!e) return;
+      e.status = e.status === 'pago' ? 'pendente' : 'pago';
+      persistirDados();
+      exibirAviso(`"${e.description}" marcado como ${e.status === 'pago' ? 'Pago' : 'Pendente'}!`);
+    });
+  });
+
+  document.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => editarLancamento(b.dataset.edit)));
+  document.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', () => excluirLancamento(b.dataset.delete)));
+  document.querySelectorAll('[data-view-receipt]').forEach(b => b.addEventListener('click', () => visualizarComprovante(b.dataset.viewReceipt)));
+}
+
+// ==========================================
+// COMPROVANTES E ANEXOS
+// ==========================================
+$('receiptFileInput').addEventListener('change', e => {
+  const arquivo = e.target.files?.[0];
+  if (!arquivo) return;
+
+  if (arquivo.size > 3 * 1024 * 1024) {
+    alert('O arquivo selecionado ultrapassa 3MB. Por favor, utilize uma imagem ou PDF menor.');
+    e.target.value = '';
+    return;
+  }
+
+  const leitor = new FileReader();
+  leitor.onload = ev => {
+    currentReceiptData = {
+      name: arquivo.name,
+      type: arquivo.type,
+      size: arquivo.size,
+      dataUrl: ev.target.result
+    };
+    $('receiptFileName').textContent = arquivo.name;
+    $('receiptPreviewBox').style.display = 'flex';
+    $('receiptHelperText').style.display = 'none';
+  };
+  leitor.readAsDataURL(arquivo);
+});
+
+$('removeReceiptBtn').addEventListener('click', () => {
+  currentReceiptData = null;
+  $('receiptFileInput').value = '';
+  $('receiptPreviewBox').style.display = 'none';
+  $('receiptHelperText').style.display = 'inline';
+});
+
+function visualizarComprovante(id) {
+  const e = state.entries.find(x => x.id === id);
+  if (!e || !e.receipt) return;
+
+  const conteudo = $('receiptModalContent');
+  const titulo = $('receiptModalTitle');
+  const botaoBaixar = $('downloadReceiptBtn');
+
+  titulo.textContent = `Comprovante: ${e.description} (${formataMoeda(e.amount)})`;
+  botaoBaixar.href = e.receipt.dataUrl;
+  botaoBaixar.download = e.receipt.name || 'comprovante';
+
+  if (e.receipt.type?.startsWith('image/')) {
+    conteudo.innerHTML = `<img src="${e.receipt.dataUrl}" style="max-width:100%;max-height:65vh;border-radius:8px;border:1px solid var(--border)">`;
+  } else if (e.receipt.type === 'application/pdf') {
+    conteudo.innerHTML = `<iframe src="${e.receipt.dataUrl}" style="width:100%;height:65vh;border:1px solid var(--border);border-radius:8px"></iframe>`;
+  } else {
+    conteudo.innerHTML = `<p>Arquivo: <b>${escapeHtml(e.receipt.name)}</b></p><p class="note">Clique no botão abaixo para baixar o comprovante.</p>`;
+  }
+
+  $('receiptModal').classList.add('active');
+}
+
+$('closeReceiptModal').addEventListener('click', () => $('receiptModal').classList.remove('active'));
+$('btnCloseReceiptModalAction').addEventListener('click', () => $('receiptModal').classList.remove('active'));
+
+// ==========================================
+// IMPORTADOR DE EXTRATOS (OFX E CSV)
+// ==========================================
+function sugerirCategoria(descricao, tipo) {
+  const d = (descricao||'').toLowerCase();
+  if (tipo === 'receita') {
+    if (/salario|pagamento|provento|folha|ted recebida|pix recebido|deposito/i.test(d)) return 'Salário';
+    if (/rendimento|dividendo|juros|poupanca|cdb/i.test(d)) return 'Rendimentos';
+    if (/reembolso|estorno|devolucao/i.test(d)) return 'Reembolso';
+    return 'Renda extra';
+  }
+  if (/mercado|supermercado|carrefour|extra|pao de acucar|assai|atacad|feira|hortifruti/i.test(d)) return 'Mercado';
+  if (/restaurante|ifood|lanchonete|pizza|hamburg|padaria|comida|mcdonald|burger/i.test(d)) return 'Comida';
+  if (/uber|99|combustivel|posto|ipiranga|shell|gasolina|etanol|estacionamento|pedagio/i.test(d)) return 'Transporte';
+  if (/farmacia|drogaria|remedio|droga|hospital|consulta|medico|laboratorio/i.test(d)) return 'Farmácia';
+  if (/luz|energia|enel|cpfl|agua|sabesp|copasa|sanepar/i.test(d)) return 'Casa';
+  if (/internet|claro|vivo|tim|oi|net/i.test(d)) return 'Casa';
+  if (/netflix|spotify|amazon|prime|hbo|disney|apple|youtube/i.test(d)) return 'Extra';
+  if (/aluguel|condominio|iptu/i.test(d)) return 'Moradia';
+  if (/escola|colegio|faculdade|curso|estudo/i.test(d)) return 'Estudo';
+  if (/pet|veterinari|racao|botudog|agropec/i.test(d)) return 'Cachorros';
+  return 'Extra';
+}
+
+function processarOFX(texto) {
+  const transacoes = [];
+  const regexTransacao = /<STMTTRN>([\s\S]*?)(?:<\/STMTTRN>|(?=<STMTTRN>|$))/gi;
+  let correspondencia;
+  while ((correspondencia = regexTransacao.exec(texto)) !== null) {
+    const bloco = correspondencia[1];
+    const obterTag = tag => {
+      const m = new RegExp(`<${tag}>([^<\\r\\n]+)`, 'i').exec(bloco);
+      return m ? m[1].trim() : '';
+    };
+    let dataBruta = obterTag('DTPOSTED');
+    let dataFormatada = dataAtual;
+    if (dataBruta && dataBruta.length >= 8) {
+      dataFormatada = `${dataBruta.slice(0, 4)}-${dataBruta.slice(4, 6)}-${dataBruta.slice(6, 8)}`;
+    }
+    let valorBruto = obterTag('TRNAMT').replace(',', '.');
+    let valor = parseFloat(valorBruto) || 0;
+    let descricao = obterTag('MEMO') || obterTag('NAME') || 'Transação Bancária';
+    
+    transacoes.push({
+      id: gerarId(),
+      date: dataFormatada,
+      type: valor < 0 ? 'despesa' : 'receita',
+      amount: Math.abs(valor),
+      description: descricao.replace(/\s+/g, ' ').trim(),
+      category: sugerirCategoria(descricao, valor < 0 ? 'despesa' : 'receita'),
+      status: 'pago',
+      account: 'Extrato Bancário',
+      selected: true
+    });
+  }
+  return transacoes;
+}
+
+function processarCSV(texto) {
+  const linhas = texto.split(/\r?\n/).filter(l => l.trim().length > 0);
+  if (linhas.length < 2) return [];
+  const delimitador = linhas[0].includes(';') ? ';' : (linhas[0].includes('\t') ? '\t' : ',');
+  
+  const transacoes = [];
+  const cabecalho = linhas[0].toLowerCase().split(delimitador).map(c => c.trim().replace(/"/g, ''));
+  let idxData = cabecalho.findIndex(h => h.includes('data') || h.includes('date'));
+  let idxDesc = cabecalho.findIndex(h => h.includes('desc') || h.includes('hist') || h.includes('memo') || h.includes('titul'));
+  let idxValor = cabecalho.findIndex(h => h.includes('valor') || h.includes('amount') || h.includes('quantia'));
+
+  if (idxData === -1) idxData = 0;
+  if (idxDesc === -1) idxDesc = 1;
+  if (idxValor === -1) idxValor = cabecalho.length > 2 ? 2 : 1;
+
+  for (let i = 1; i < linhas.length; i++) {
+    const colunas = linhas[i].split(delimitador).map(c => c.trim().replace(/^"|"$/g, ''));
+    if (colunas.length < 2) continue;
+
+    let dataBruta = colunas[idxData] || '';
+    let dataFormatada = dataAtual;
+    if (dataBruta.includes('/')) {
+      const partes = dataBruta.split('/');
+      if (partes.length === 3) {
+        const ano = partes[2].length === 4 ? partes[2] : `20${partes[2]}`;
+        dataFormatada = `${ano}-${partes[1].padStart(2,'0')}-${partes[0].padStart(2,'0')}`;
+      }
+    } else if (dataBruta.includes('-')) {
+      dataFormatada = dataBruta.slice(0, 10);
+    }
+
+    let valorBruto = (colunas[idxValor] || '').replace(/[R$\s]/g, '');
+    if (valorBruto.includes(',') && valorBruto.includes('.')) {
+      valorBruto = valorBruto.replace(/\./g, '').replace(',', '.');
+    } else if (valorBruto.includes(',')) {
+      valorBruto = valorBruto.replace(',', '.');
+    }
+    const valor = parseFloat(valorBruto) || 0;
+    const descricao = colunas[idxDesc] || 'Lançamento Importado';
+
+    transacoes.push({
+      id: gerarId(),
+      date: dataFormatada,
+      type: valor < 0 ? 'despesa' : 'receita',
+      amount: Math.abs(valor),
+      description: descricao.replace(/\s+/g, ' ').trim(),
+      category: sugerirCategoria(descricao, valor < 0 ? 'despesa' : 'receita'),
+      status: 'pago',
+      account: 'Extrato Planilha',
+      selected: true
+    });
+  }
+  return transacoes;
+}
+
+$('openOfxImportBtn').addEventListener('click', () => {
+  $('statementPreviewArea').style.display = 'none';
+  $('statementFileInfo').textContent = '';
+  $('bankStatementFile').value = '';
+  $('ofxModal').classList.add('active');
+});
+
+$('closeOfxModal').addEventListener('click', () => $('ofxModal').classList.remove('active'));
+$('cancelImportStatement').addEventListener('click', () => $('ofxModal').classList.remove('active'));
+
+$('bankStatementFile').addEventListener('change', async e => {
+  const arquivo = e.target.files?.[0];
+  if (!arquivo) return;
+
+  $('statementFileInfo').textContent = `Lendo arquivo: ${arquivo.name}...`;
+  const texto = await arquivo.text();
+  
+  if (arquivo.name.toLowerCase().endsWith('.ofx') || texto.includes('<OFX>')) {
+    pendingStatementEntries = processarOFX(texto);
+  } else {
+    pendingStatementEntries = processarCSV(texto);
+  }
+
+  if (!pendingStatementEntries.length) {
+    alert('Nenhum lançamento foi reconhecido no arquivo selecionado.');
+    $('statementFileInfo').textContent = 'Erro ao processar arquivo.';
+    return;
+  }
+
+  $('statementFileInfo').textContent = `Arquivo carregado com sucesso: ${arquivo.name} (${pendingStatementEntries.length} lançamentos encontrados)`;
+  renderizarPreviaExtrato();
+});
+
+function renderizarPreviaExtrato() {
+  $('statementCount').textContent = pendingStatementEntries.length;
+  $('statementPreviewArea').style.display = 'block';
+
+  const corpoTabela = $('statementTableBody');
+  const categoriasDesp = [...categorias.despesa];
+  const categoriasRec = [...categorias.receita];
+
+  corpoTabela.innerHTML = pendingStatementEntries.map((item, idx) => `
+    <tr>
+      <td><input type="checkbox" data-idx="${idx}" ${item.selected ? 'checked' : ''}></td>
+      <td><input type="date" value="${item.date}" data-field="date" data-idx="${idx}" style="padding:4px 6px"></td>
+      <td>
+        <select data-field="type" data-idx="${idx}" style="padding:4px 6px">
+          <option value="despesa" ${item.type === 'despesa' ? 'selected' : ''}>Despesa</option>
+          <option value="receita" ${item.type === 'receita' ? 'selected' : ''}>Receita</option>
+        </select>
+      </td>
+      <td><input type="text" value="${escapeHtml(item.description)}" data-field="description" data-idx="${idx}" style="padding:4px 6px"></td>
+      <td class="${item.type === 'receita' ? 'green' : 'red'}" style="font-weight:bold">${formataMoeda(item.amount)}</td>
+      <td>
+        <select data-field="category" data-idx="${idx}" style="padding:4px 6px">
+          ${(item.type === 'receita' ? categoriasRec : categoriasDesp).map(c => `<option value="${escapeHtml(c)}" ${c === item.category ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="text" value="${escapeHtml(item.account)}" data-field="account" data-idx="${idx}" style="padding:4px 6px;width:120px"></td>
+    </tr>
+  `).join('');
+
+  corpoTabela.querySelectorAll('input[type="checkbox"]').forEach(ck => {
+    ck.addEventListener('change', () => {
+      pendingStatementEntries[ck.dataset.idx].selected = ck.checked;
+    });
+  });
+
+  corpoTabela.querySelectorAll('input[type="text"], input[type="date"], select').forEach(campo => {
+    campo.addEventListener('change', () => {
+      const idx = campo.dataset.idx;
+      const propriedade = campo.dataset.field;
+      if (idx !== undefined && propriedade) {
+        pendingStatementEntries[idx][propriedade] = campo.value;
+      }
+    });
+  });
+}
+
+$('selectAllStatement').addEventListener('click', () => {
+  pendingStatementEntries.forEach(item => item.selected = true);
+  renderizarPreviaExtrato();
+});
+
+$('deselectAllStatement').addEventListener('click', () => {
+  pendingStatementEntries.forEach(item => item.selected = false);
+  renderizarPreviaExtrato();
+});
+
+$('checkStatementMaster').addEventListener('change', e => {
+  pendingStatementEntries.forEach(item => item.selected = e.target.checked);
+  renderizarPreviaExtrato();
+});
+
+$('confirmImportStatement').addEventListener('click', () => {
+  const selecionados = pendingStatementEntries.filter(i => i.selected);
+  if (!selecionados.length) {
+    alert('Nenhum lançamento foi selecionado para ser importado.');
+    return;
+  }
+
+  selecionados.forEach(item => {
+    state.entries.push({
+      id: gerarId(),
+      date: item.date,
+      type: item.type,
+      description: item.description,
+      amount: Number(item.amount),
+      category: item.category,
+      status: item.status || 'pago',
+      dueDate: item.date,
+      account: item.account || 'Banco',
+      notes: 'Importado de extrato bancário'
+    });
+  });
+
+  persistirDados();
+  $('ofxModal').classList.remove('active');
+  exibirAviso(`${selecionados.length} lançamentos importados com sucesso!`);
+});
+
+// ==========================================
+// ORÇAMENTOS E LIMITES
+// ==========================================
+function renderizarOrcamento() {
+  const mes = $('budgetMonth').value || '2026-11';
+  const linhas = categorias.despesa.map(cat => {
+    const chave = `${mes}|${cat}`;
+    const limite = Number(state.budgets[chave] || 0);
+    const gasto = lancamentosDoMes(mes).filter(e => e.type === 'despesa' && e.category === cat)
+                                       .reduce((s, e) => s + Number(e.amount || 0), 0);
+    if (!limite && !gasto) return '';
+    const porcentagem = limite ? Math.min(gasto / limite * 100, 100) : 0;
+    const estourado = limite > 0 && gasto > limite;
+
+    return `
+      <tr>
+        <td><b>${escapeHtml(cat)}</b></td>
+        <td>${formataMoeda(limite)}</td>
+        <td>${formataMoeda(gasto)}</td>
+        <td class="${estourado ? 'red' : 'green'}">
+          ${limite ? (estourado ? '⚠️ Acima do limite previsto' : `${Math.round(gasto/limite*100)}% utilizado`) : 'Sem limite definido'}
+        </td>
+        <td>${limite ? `<progress max="100" value="${porcentagem}"></progress>` : '—'}</td>
+        <td>
+          <button class="danger small" data-budget-delete="${escapeHtml(cat)}">Remover</button>
+        </td>
+      </tr>
+    `;
+  }).filter(Boolean);
+
+  if ($('budgetTable')) {
+    $('budgetTable').innerHTML = linhas.length ? `
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Limite Definido</th>
+              <th>Gasto Previsto</th>
+              <th>Situação</th>
+              <th>Progresso</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>${linhas.join('')}</tbody>
+        </table>
+      </div>
+    ` : '<p class="note">Ainda não há limites cadastrados nem despesas registradas para este mês.</p>';
+
+    $('budgetTable').querySelectorAll('[data-budget-delete]').forEach(b => {
+      b.addEventListener('click', () => {
+        delete state.budgets[`${mes}|${b.dataset.budgetDelete}`];
+        persistirDados();
+      });
+    });
+  }
+
+  renderizarGraficoOrcamento();
+}
+
+// ==========================================
+// ACOMPANHAMENTO DE PRODUTOS
+// ==========================================
+function renderizarAcompanhamentoProduto() {
+  const produto = $('trackProduct').value;
+  const container = $('productTrackingResult');
+  if (!container) return;
+
+  if (!produto) {
+    container.innerHTML = '<p class="note">Selecione um produto para visualizar o histórico de compras.</p>';
+    renderizarGraficoProduto(null);
+    return;
+  }
+
+  const correspondencias = state.entries.filter(e => (e.description||'').toLowerCase() === produto.toLowerCase());
+  const dadosMensais = {};
+  correspondencias.forEach(e => {
+    const m = e.date ? e.date.slice(0,7) : 'Outros';
+    dadosMensais[m] = (dadosMensais[m] || 0) + Number(e.amount || 0);
+  });
+
+  const mesesOrdenados = Object.keys(dadosMensais).sort();
+  const linhas = mesesOrdenados.map(m => `
+    <tr>
+      <td><b>${escapeHtml(rotuloMes(m))}</b></td>
+      <td class="red" style="font-weight:bold">${formataMoeda(dadosMensais[m])}</td>
+    </tr>
+  `);
+
+  container.innerHTML = mesesOrdenados.length ? `
+    <div class="table-wrap" style="max-width:500px">
+      <table>
+        <thead><tr><th>Mês</th><th>Total Gasto</th></tr></thead>
+        <tbody>${linhas.join('')}</tbody>
+      </table>
+    </div>
+  ` : '<p class="note">Nenhum registro encontrado para este item.</p>';
+
+  renderizarGraficoProduto(produto);
+}
+
+// ==========================================
+// RELATÓRIOS CONSOLIDADOS
+// ==========================================
+function renderizarRelatorios() {
+  const mes = $('reportMonth').value || '2026-11';
+  const lista = lancamentosDoMes(mes);
+  const recebido = totalPorTipo(lista, 'receita', 'pago');
+  const pago = totalPorTipo(lista, 'despesa', 'pago');
+  const pendente = totalPorTipo(lista, null, 'pendente');
+
+  definirTexto('rIncome', formataMoeda(recebido));
+  definirTexto('rExpense', formataMoeda(pago));
+  definirTexto('rResult', formataMoeda(recebido - pago));
+  definirTexto('rPending', formataMoeda(pendente));
+
+  const totaisCategorias = {};
+  lista.filter(e => e.type === 'despesa').forEach(e => {
+    totaisCategorias[e.category] = (totaisCategorias[e.category] || 0) + Number(e.amount || 0);
+  });
+  const linhas = Object.entries(totaisCategorias).sort((a,b) => b[1] - a[1]);
+
+  if ($('reportDetails')) {
+    $('reportDetails').innerHTML = `
+      <h3>Detalhamento de Despesas — ${escapeHtml(rotuloMes(mes))}</h3>
+      ${linhas.length ? `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Categoria</th><th>Total Registrado</th><th>Participação Percentual</th></tr>
+            </thead>
+            <tbody>
+              ${linhas.map(([c,v]) => `
+                <tr>
+                  <td>${escapeHtml(c)}</td>
+                  <td style="font-weight:bold">${formataMoeda(v)}</td>
+                  <td>${pago || totalPorTipo(lista,'despesa',null) ? (v / (totalPorTipo(lista,'despesa',null)||1)*100).toFixed(1).replace('.',',')+'%' : '—'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : '<p class="note">Sem despesas registradas neste mês.</p>'}
+    `;
+  }
+}
+
+function renderizarTudo() {
+  atualizarSelecoesCategorias();
+  renderizarPainel();
+  renderizarLancamentos();
+  renderizarOrcamento();
+  renderizarAcompanhamentoProduto();
+  renderizarRelatorios();
+  renderizarPainelCasal();
+}
+
+function limparFormulario() {
+  $('entryForm').reset();
+  $('editId').value = '';
+  $('date').value = dataAtual;
+  $('formTitle').textContent = 'Adicionar Lançamento';
+  $('saveBtn').textContent = '💾 Salvar Lançamento';
+  $('cancelEdit').hidden = true;
+  $('status').value = 'pago';
+  $('isInstallment').value = 'no';
+  $('totalInstallments').value = '1';
+  currentReceiptData = null;
+  $('receiptFileInput').value = '';
+  $('receiptPreviewBox').style.display = 'none';
+  $('receiptHelperText').style.display = 'inline';
+}
+
+function editarLancamento(id) {
+  const e = state.entries.find(x => x.id === id);
+  if (!e) return;
+
+  $('editId').value = e.id;
+  $('date').value = e.date;
+  $('type').value = e.type;
+  $('description').value = e.description;
+  $('amount').value = e.amount;
+  $('category').value = e.category;
+  $('status').value = e.status;
+  $('dueDate').value = e.dueDate || '';
+  $('account').value = e.account || '';
+  $('notes').value = e.notes || '';
+  $('isInstallment').value = 'no';
+  $('totalInstallments').value = '1';
+
+  if (e.receipt) {
+    currentReceiptData = e.receipt;
+    $('receiptFileName').textContent = e.receipt.name || 'comprovante';
+    $('receiptPreviewBox').style.display = 'flex';
+    $('receiptHelperText').style.display = 'none';
+  } else {
+    currentReceiptData = null;
+    $('receiptFileInput').value = '';
+    $('receiptPreviewBox').style.display = 'none';
+    $('receiptHelperText').style.display = 'inline';
+  }
+
+  $('formTitle').textContent = 'Editar Lançamento';
+  $('saveBtn').textContent = '💾 Salvar Alterações';
+  $('cancelEdit').hidden = false;
+
+  document.querySelector('[data-tab="lancamentos"]').click();
+  $('description').focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function excluirLancamento(id) {
+  const e = state.entries.find(x => x.id === id);
+  if (e && confirm(`Deseja realmente excluir "${e.description}"?`)) {
+    state.entries = state.entries.filter(x => x.id !== id);
+    persistirDados();
+    exibirAviso('Lançamento excluído com sucesso.');
+  }
+}
+
+$('entryForm').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const valor = Number($('amount').value);
+  if (!(valor > 0)) { alert('Informe um valor numérico maior que zero.'); return; }
+
+  const id = $('editId').value || gerarId();
+  const parcelado = $('isInstallment').value === 'yes';
+  const totalParcelas = Math.max(1, parseInt($('totalInstallments').value || 1));
+  const dataBase = new Date($('date').value + 'T00:00:00');
+
+  if (parcelado && totalParcelas > 1 && !$('editId').value) {
+    const parcelas = [];
+    for (let i = 0; i < totalParcelas; i++) {
+      const d = new Date(dataBase);
+      d.setMonth(d.getMonth() + i);
+      const strData = d.toISOString().split('T')[0];
+      parcelas.push({
+        id: gerarId(),
+        date: strData,
+        type: $('type').value,
+        description: $('description').value.trim(),
+        amount: valor,
+        category: $('category').value,
+        status: i === 0 ? $('status').value : 'pendente',
+        dueDate: strData,
+        account: $('account').value.trim() || 'Família',
+        notes: `Parcela ${i+1}/${totalParcelas}` + ($('notes').value ? ` - ${$('notes').value}` : ''),
+        receipt: currentReceiptData
+      });
+    }
+    state.entries.unshift(...parcelas);
+    exibirAviso(`${totalParcelas} parcelas cadastradas com sucesso!`);
+  } else {
+    const e = {
+      id,
+      date: $('date').value,
+      type: $('type').value,
+      description: $('description').value.trim(),
+      amount: valor,
+      category: $('category').value,
+      status: $('status').value,
+      dueDate: $('dueDate').value,
+      account: $('account').value.trim(),
+      notes: $('notes').value.trim(),
+      receipt: currentReceiptData
+    };
+    const idx = state.entries.findIndex(x => x.id === id);
+    if (idx >= 0) state.entries[idx] = e; else state.entries.unshift(e);
+    exibirAviso('Lançamento salvo com sucesso!');
+  }
+
+  const mesLancamento = $('date').value.slice(0, 7);
+  ['dashMonth', 'filterMonth', 'budgetMonth', 'reportMonth', 'casalMonth'].forEach(id => {
+    if ($(id)) $(id).value = mesLancamento;
+  });
+  $('dashAccount').value = '';
+  $('filterType').value = '';
+  $('filterStatus').value = '';
+  $('filterCategory').value = '';
+  $('filterSearch').value = '';
+
+  persistirDados();
+  limparFormulario();
+});
+
+$('entryForm').addEventListener('reset', () => setTimeout(limparFormulario, 0));
+$('cancelEdit').addEventListener('click', limparFormulario);
+
+function avancarMes(idCampo, variacao) {
+  const el = $(idCampo);
+  if (!el || !el.value) return;
+  const [ano, mes] = el.value.split('-').map(Number);
+  const d = new Date(ano, mes - 1 + variacao, 1);
+  el.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  el.dispatchEvent(new Event('change'));
+}
+
+$('btnPrevDashMonth')?.addEventListener('click', () => avancarMes('dashMonth', -1));
+$('btnNextDashMonth')?.addEventListener('click', () => avancarMes('dashMonth', 1));
+$('btnPrevFilterMonth')?.addEventListener('click', () => avancarMes('filterMonth', -1));
+$('btnNextFilterMonth')?.addEventListener('click', () => avancarMes('filterMonth', 1));
+
+// ==========================================
+// NAVEGAÇÃO E MODALIDADES (DESKTOP E CELULAR)
+// ==========================================
+function alternarAba(nomeAba) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === nomeAba));
+  document.querySelectorAll('.mobile-nav-item[data-tab]').forEach(x => x.classList.toggle('active', x.dataset.tab === nomeAba));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === nomeAba));
+  
+  if (['painel', 'orcamento', 'acompanhamento', 'casal'].includes(nomeAba)) {
+    setTimeout(renderizarTodosGraficos, 50);
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('.tab').forEach(b => {
+  b.addEventListener('click', () => alternarAba(b.dataset.tab));
+});
+
+// Os botões da barra inferior são inseridos no HTML antes do script,
+// mas registramos os eventos aqui garantindo que o DOM já os contém
+document.querySelectorAll('.mobile-nav-item[data-tab]').forEach(b => {
+  b.addEventListener('click', () => alternarAba(b.dataset.tab));
+});
+
+$('mobileBtnNovo')?.addEventListener('click', () => {
+  alternarAba('lancamentos');
+  setTimeout(() => {
+    $('entryForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('description')?.focus();
+  }, 100);
+});
+
+// ==========================================
+// PAINEL CASAL E GRÁFICO DE DIVISÃO
+// ==========================================
+let chartCasal = null;
+function renderizarPainelCasal() {
+  const mes = $('casalMonth')?.value || $('dashMonth')?.value || '2026-11';
+  if ($('casalMonth') && !$('casalMonth').value) $('casalMonth').value = mes;
+  
+  const lista = lancamentosDoMes(mes).filter(e => e.type === 'despesa');
+  let totalTamir = 0;
+  let totalTamires = 0;
+  let totalFamilia = 0;
+
+  lista.forEach(e => {
+    const acc = (e.account || '').toLowerCase();
+    const val = Number(e.amount || 0);
+    if (acc.includes('tamires')) {
+      totalTamires += val;
+    } else if (acc.includes('tamir')) {
+      totalTamir += val;
+    } else {
+      totalFamilia += val;
+    }
+  });
+
+  const totalGeral = totalTamir + totalTamires + totalFamilia;
+  definirTexto('mCasalTamir', formataMoeda(totalTamir));
+  definirTexto('mCasalTamires', formataMoeda(totalTamires));
+  definirTexto('mCasalFamilia', formataMoeda(totalFamilia));
+  definirTexto('mCasalTotal', formataMoeda(totalGeral));
+
+  // Gráfico de Rosca do Casal
+  const ctx = $('chartCasal')?.getContext('2d');
+  if (ctx && typeof Chart !== 'undefined') {
+    if (chartCasal) chartCasal.destroy();
+    chartCasal = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['🧔 Tamir', '👩 Tamires', '🏠 Família / Conjunto'],
+        datasets: [{
+          data: totalGeral > 0 ? [totalTamir, totalTamires, totalFamilia] : [1, 1, 1],
+          backgroundColor: totalGeral > 0 ? ['#267568', '#ec4899', '#3b82f6'] : ['#cbd5e1', '#e2e8f0', '#94a3b8'],
+          borderWidth: 2,
+          borderColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1b2624' : '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 14, font: { size: 12 } } },
+          tooltip: {
+            callbacks: {
+              label: (item) => ` ${item.label}: ${formataMoeda(item.raw)}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  if ($('casalCloudStatusText')) {
+    $('casalCloudStatusText').textContent = currentUser?.isCloud ? '☁️ Nuvem Ativa (Supabase Conectado)' : '🟢 Modo Local (Nuvem Disponível)';
+  }
+}
+
+$('casalMonth')?.addEventListener('change', renderizarPainelCasal);
+
+// Seleção rápida de Responsável com botões de tag
+document.querySelectorAll('[data-set-account]').forEach(b => {
+  b.addEventListener('click', () => {
+    $('account').value = b.dataset.setAccount;
+    exibirAviso(`Responsável definido: ${b.dataset.setAccount}`);
+  });
+});
+
+// Atualizar Link do QR Code
+$('btnUpdateQrCode')?.addEventListener('click', () => {
+  const link = $('customQrUrl')?.value.trim();
+  if (!link) { alert('Digite um endereço para gerar o QR Code.'); return; }
+  const urlFinal = link.startsWith('http') ? link : 'http://' + link;
+  $('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlFinal)}`;
+  $('qrCodeLink').href = urlFinal;
+  $('qrCodeLink').textContent = urlFinal;
+  exibirAviso('QR Code atualizado com sucesso!');
+});
+
+// Envio e Importação via WhatsApp
+$('btnShareWhatsApp')?.addEventListener('click', () => {
+  const mes = $('casalMonth')?.value || $('dashMonth')?.value || '2026-11';
+  const lista = lancamentosDoMes(mes);
+  const rec = totalPorTipo(lista, 'receita', null);
+  const desp = totalPorTipo(lista, 'despesa', null);
+  const saldo = rec - desp;
+  
+  const texto = encodeURIComponent(
+    `💰 *Controle Financeiro da Família*\n` +
+    `📅 Mês: ${rotuloMes(mes)}\n` +
+    `📈 Receitas: ${formataMoeda(rec)}\n` +
+    `📉 Despesas: ${formataMoeda(desp)}\n` +
+    `💵 Saldo: ${formataMoeda(saldo)}\n\n` +
+    `Oi amor! Aqui está o resumo das nossas finanças atualizadas. No nosso aplicativo, você pode clicar em "Importar Dados" na aba Casal para carregar os lançamentos mais recentes!`
+  );
+  window.open(`https://api.whatsapp.com/send?text=${texto}`, '_blank');
+});
+
+$('btnExportWhatsAppJson')?.addEventListener('click', () => {
+  baixarArquivo(
+    new Blob([JSON.stringify({ ...state, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' }),
+    `financas_familia_atualizado_${dataAtual}.json`
+  );
+  exibirAviso('Arquivo baixado! Agora basta enviar este arquivo no WhatsApp da sua esposa.');
+});
+
+$('btnImportWhatsAppJson')?.addEventListener('click', () => {
+  $('importWhatsAppModal').classList.add('active');
+});
+
+$('closeImportWhatsAppModal')?.addEventListener('click', () => $('importWhatsAppModal').classList.remove('active'));
+$('cancelImportWhatsAppModal')?.addEventListener('click', () => $('importWhatsAppModal').classList.remove('active'));
+
+$('btnConfirmImportWhatsApp')?.addEventListener('click', () => {
+  const texto = $('whatsAppInputText').value.trim();
+  if (texto) {
+    try {
+      const dados = JSON.parse(texto);
+      if (Array.isArray(dados.entries)) {
+        state.entries = dados.entries;
+        if (dados.budgets) state.budgets = dados.budgets;
+        persistirDados();
+        $('importWhatsAppModal').classList.remove('active');
+        $('whatsAppInputText').value = '';
+        exibirAviso('Dados recebidos importados com sucesso! Celular 100% atualizado.');
+        return;
+      }
+    } catch {
+      alert('O texto colado não é válido. Tente enviar pelo arquivo .json.');
+      return;
+    }
+  }
+  
+  const file = $('whatsAppInputFile')?.files?.[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const dados = JSON.parse(ev.target.result);
+        if (Array.isArray(dados.entries)) {
+          state.entries = dados.entries;
+          if (dados.budgets) state.budgets = dados.budgets;
+          persistirDados();
+          $('importWhatsAppModal').classList.remove('active');
+          $('whatsAppInputFile').value = '';
+          exibirAviso('Arquivo importado com sucesso! Celular 100% sincronizado.');
+        } else {
+          alert('Arquivo de dados inválido.');
+        }
+      } catch (err) {
+        alert('Erro ao ler arquivo: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    return;
+  }
+
+  alert('Por favor, cole o conteúdo de backup ou selecione o arquivo .json recebido no WhatsApp.');
+});
+
+// Sincronização manual Supabase
+$('btnSyncCloudNow')?.addEventListener('click', async () => {
+  if (!authSession?.access_token) {
+    alert('A sincronização automática em nuvem requer a conexão configurada com o Supabase. Clique em "Configurar Conexão" para preencher.');
+    return;
+  }
+  exibirAviso('Sincronizando com a nuvem...');
+  try {
+    const resp = await requisicaoSupabase('/rest/v1/finance_data?select=data,updated_at', {
+      metodo: 'GET',
+      tokenAcesso: authSession.access_token
+    });
+    if (resp && resp[0]?.data) {
+      state = resp[0].data;
+      renderizarTudo();
+      exibirAviso('☁️ Celular atualizado com a nuvem com sucesso!');
+    } else {
+      persistirDados();
+      exibirAviso('☁️ Dados locais enviados para a nuvem!');
+    }
+  } catch (err) {
+    alert('Erro ao sincronizar com a nuvem: ' + err.message);
+  }
+});
+
+$('btnOpenCloudConfig')?.addEventListener('click', () => {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  $('authScreen').classList.remove('hidden');
+  $('appScreen').classList.add('hidden');
+  $('cloudConfigDetails').open = true;
+});
+
+['dashMonth', 'dashAccount'].forEach(id => $(id)?.addEventListener('change', renderizarPainel));
+['filterMonth', 'filterType', 'filterStatus', 'filterCategory'].forEach(id => $(id)?.addEventListener('change', renderizarLancamentos));
+$('filterSearch')?.addEventListener('input', renderizarLancamentos);
+
+$('showAll')?.addEventListener('click', () => {
+  $('filterMonth').value = '';
+  $('filterType').value = '';
+  $('filterStatus').value = '';
+  $('filterCategory').value = '';
+  $('filterSearch').value = '';
+  renderizarLancamentos();
+});
+
+$('saveBudget')?.addEventListener('click', () => {
+  const mes = $('budgetMonth').value || '2026-11';
+  const categoria = $('budgetCategory').value;
+  const valor = Number($('budgetAmount').value);
+  if (!categoria || !Number.isFinite(valor) || valor <= 0) {
+    alert('Selecione uma categoria e informe um limite maior que zero.');
+    return;
+  }
+  state.budgets[`${mes}|${categoria}`] = valor;
+  persistirDados();
+  $('budgetAmount').value = '';
+  exibirAviso('Limite de orçamento salvo com sucesso!');
+});
+
+$('budgetMonth')?.addEventListener('change', renderizarOrcamento);
+$('trackProduct')?.addEventListener('change', renderizarAcompanhamentoProduto);
+$('refreshReport')?.addEventListener('click', renderizarRelatorios);
+$('reportMonth')?.addEventListener('change', renderizarRelatorios);
+
+// Botões para carregar ou restaurar os dados originais da planilha
+function carregarPlanilhaOficial() {
+  state.entries = gerarLancamentosPlanilha();
+  persistirDados();
+  $('dashMonth').value = '2026-11';
+  $('filterMonth').value = '2026-11';
+  $('budgetMonth').value = '2026-11';
+  $('reportMonth').value = '2026-11';
+  renderizarTudo();
+  exibirAviso('512 lançamentos da planilha oficial carregados com sucesso!');
+}
+
+$('btnRecarregarPlanilhaBanner')?.addEventListener('click', () => {
+  if (confirm('Deseja recarregar todos os 512 lançamentos oficiais da planilha (receitas e parcelamentos)?')) {
+    carregarPlanilhaOficial();
+  }
+});
+
+$('btnRestaurarPlanilhaTabela')?.addEventListener('click', () => {
+  if (confirm('Deseja recarregar todos os 512 lançamentos oficiais da planilha?')) {
+    carregarPlanilhaOficial();
+  }
+});
+
+$('btnRestaurarPlanilhaOriginal')?.addEventListener('click', () => {
+  if (confirm('Deseja restaurar todos os 512 lançamentos e produtos da planilha original?')) {
+    carregarPlanilhaOficial();
+  }
+});
+
+function escaparCsv(v) { return '"' + String(v??'').replace(/"/g, '""') + '"'; }
+function exportarCsv(lista, nomeArquivo) {
+  const cabecalho = ['Data', 'Tipo', 'Descrição', 'Categoria', 'Valor', 'Situação', 'Vencimento', 'Responsável/Conta', 'Observações'];
+  const linhas = [cabecalho, ...lista.map(e => [
+    e.date,
+    e.type === 'receita' ? 'Crédito' : 'Débito',
+    e.description,
+    e.category,
+    Number(e.amount).toFixed(2).replace('.', ','),
+    e.status === 'pago' ? 'Pago' : 'Pendente',
+    e.dueDate || '',
+    e.account || '',
+    e.notes || ''
+  ])].map(linha => linha.map(escaparCsv).join(';'));
+  
+  const blob = new Blob(['\ufeff' + linhas.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  baixarArquivo(blob, nomeArquivo);
+}
+
+function baixarArquivo(blob, nomeArquivo) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nomeArquivo;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+$('exportFiltered')?.addEventListener('click', () => exportarCsv(lancamentosFiltrados(), 'lancamentos_filtrados.csv'));
+$('exportAllCsv')?.addEventListener('click', () => exportarCsv([...state.entries].sort((a,b) => a.date.localeCompare(b.date)), 'todos_lancamentos.csv'));
+
+$('backupJson')?.addEventListener('click', () => {
+  baixarArquivo(
+    new Blob([JSON.stringify({ ...state, exportedAt: new Date().toISOString(), formatVersion: 2 }, null, 2)], { type: 'application/json' }),
+    `copia_seguranca_financeira_${dataAtual}.json`
+  );
+  exibirAviso('Cópia de segurança JSON baixada com sucesso!');
+});
+
+$('importFile')?.addEventListener('change', async ev => {
+  const arquivo = ev.target.files?.[0];
+  if (!arquivo) return;
+  try {
+    const dados = JSON.parse(await arquivo.text());
+    if (!dados || !Array.isArray(dados.entries) || typeof dados.budgets !== 'object') throw new Error('O arquivo não possui o formato esperado.');
+    if (!confirm(`Deseja restaurar esta cópia com ${dados.entries.length} lançamentos? Os registros atuais deste perfil serão substituídos.`)) return;
+    state = { entries: dados.entries, budgets: dados.budgets };
+    persistirDados();
+    exibirAviso('Cópia de segurança restaurada com sucesso!');
+  } catch (err) {
+    alert('Erro ao restaurar a cópia de segurança: ' + err.message);
+  } finally {
+    ev.target.value = '';
+  }
+});
+
+$('clearData')?.addEventListener('click', () => {
+  if (confirm('Atenção: todos os lançamentos e limites deste perfil serão apagados permanentemente. Deseja continuar?')) {
+    state = { entries: [], budgets: {} };
+    persistirDados();
+    limparFormulario();
+    exibirAviso('Todos os dados foram apagados.');
+  }
+});
+
+function inicializar() {
+  const urlAtualizada = new URL(window.location.href);
+  if (urlAtualizada.searchParams.has('_app_refresh')) {
+    urlAtualizada.searchParams.delete('_app_refresh');
+    window.history.replaceState(null, '', urlAtualizada.href);
+  }
+
+  inicializarTema();
+  atualizarPerfisRecentesUI();
+
+  // Garante o perfil "Família" cadastrado
+  const perfis = obterPerfisSalvos();
+  if (!perfis['família'] && !perfis['familia']) {
+    perfis['família'] = { name: 'Família', pin: '', updatedAt: new Date().toISOString() };
+    salvarListaPerfis(perfis);
+  }
+
+  const sessaoSalva = localStorage.getItem(CHAVE_SESSAO) || sessionStorage.getItem(CHAVE_SESSAO);
+  if (sessaoSalva) {
+    try {
+      currentUser = JSON.parse(sessaoSalva);
+      if (currentUser?.id) {
+        iniciarSistema();
+        return;
+      }
+    } catch {}
+  }
+  
+  $('localUserName').value = 'Família';
+}
+
+inicializar();
+
+})();
+</script>
+
+</body>
+</html>
